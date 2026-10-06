@@ -1,6 +1,6 @@
 # Implementation acceptance report
 
-Date: **6 October 2026**. Build: app v1.0.0, schema 1. Test environments: macOS and GitHub Actions Ubuntu, Node.js 24, Playwright Chromium, production Vite output served at `/peyrieu-school-demo/`.
+Date: **6 October 2026**. Build: app v1.0.0, schema 1. Test environments: macOS and GitHub Actions Ubuntu, Node.js 24, Playwright Chromium, production Vite output served at `/ecole-peyrieu/`.
 
 ## Recorded results
 
@@ -13,8 +13,8 @@ Date: **6 October 2026**. Build: app v1.0.0, schema 1. Test environments: macOS 
 - Generated French form-receipt PDF rendered and visually inspected: readable text, French accents, page layout and demonstration/no-signature footer. PDFs are actual downloadable documents; uploaded filenames survive submission/review.
 - ICS parsed with `ical.js`: stable UID, revision/status, exclusive all-day end date, escaped/folded UTF-8 content, correct UTC instants and weekly Paris wall time across the October daylight-saving transition.
 - Offline form submission and a real two-version service-worker update tested. The new worker waits for explicit activation, preserves a saved draft and replaces only its own app cache.
-- [GitHub verification and deployment](https://github.com/MarsupiL/peyrieu-school-demo/actions/runs/37425469373) passed the same lint, 30 domain tests, build and 19 browser tests for source commit `4bf2bed148d2120a5abc05bd204abc98f8272a49`.
-- [Public HTTPS site](https://marsupil.github.io/peyrieu-school-demo/) verified: all 15 served production files matched the local build byte for byte. A fresh isolated hosted browser passed service-worker activation, offline reload, persisted form submission, PDF receipt download, language switching and protected deep-link denial. All 30 observed requests were same-origin reads, with no external/write requests or page errors.
+- [GitHub verification and deployment](https://github.com/MarsupiL/ecole-peyrieu/actions/runs/37425469373) passed the same lint, 30 domain tests, build and 19 browser tests for source commit `4bf2bed148d2120a5abc05bd204abc98f8272a49`.
+- [Public HTTPS site](https://marsupil.github.io/ecole-peyrieu/) verified: all 15 served production files matched the local build byte for byte. A fresh isolated hosted browser passed service-worker activation, offline reload, persisted form submission, PDF receipt download, language switching and protected deep-link denial. All 30 observed requests were same-origin reads, with no external/write requests or page errors.
 - Dependency installation reported no known audit vulnerabilities at implementation time. This is a point-in-time package check, not an application security assessment.
 
 Artifacts from the latest browser run are local in `test-results/` and `playwright-report/`. They are ignored by Git and excluded from deployment. The HTML report can be opened with `npx playwright show-report`. Source evidence is in `tests/domain.test.ts`, `tests/e2e/journeys.spec.ts` and `tests/e2e/update.spec.ts`.
@@ -117,6 +117,12 @@ Source regression coverage is in `tests/e2e/layout.spec.ts`. The original deploy
 - The user selected **Le crayon qui pousse** from four original SVG concepts. The full wordmark replaces the sidebar monogram; the compact mark appears in the phone/desktop header, loading screen and favicon.
 - 192/512 px app PNGs are generated from the same compact SVG. A separate 512 px maskable PNG and 180 px Apple touch PNG have opaque navy backgrounds. Their dimensions, manifest references and file formats were checked. Physical launcher/install behavior remains unverified.
 - The existing 40-journey production suite passes, including layout, accessibility, offline and safe-update flows. Desktop and phone screenshots were visually reviewed; the final phone header and offline flows were rechecked after a responsive style correction. No additional behavior tests were introduced for this visual change.
+
+## Project URL rename — 6 October 2026
+
+- Build, service-worker scope/assets/notification links, preview/test URLs and documentation use `/ecole-peyrieu/`. The existing 38 domain tests and 40 production browser journeys pass at the new project path.
+- The two-version update journey also checks that a legacy-path offline cache is preserved while the current-path cache updates and the saved draft survives.
+- A separate local migration check served the previous and new production builds on the same origin, saved a draft through the old URL, then reopened it at the new URL. It verified the retained draft, unchanged app identifier, new manifest start/scope, both cached versions loading offline and no page errors. Physical installed-app shortcut migration remains unverified.
 
 ## Remaining checks and limitations
 
