@@ -5,10 +5,10 @@ Date: **6 October 2026**. Build: app v1.0.0, schema 1. Test environments: macOS 
 ## Recorded results
 
 - `npm run lint`: passed; no ESLint errors.
-- `npm test`: **32 domain tests passed**.
+- `npm test`: **38 domain tests passed**.
 - TypeScript compilation and `npm run build`: passed. Vite emitted a bundle-size advisory for the eagerly loaded full UI/PDF engine; no build failure.
-- `npm run test:e2e`: **32 production browser tests passed**, including 10 design regression tests and three messaging regression journeys added after the initial 19-test release. Each journey has an isolated browser context. The main journeys pin the clock to 6 October 2026; the seed starts that school week.
-- Axe checks: no violations for the tested home page, annual form, form editor and populated inbox with WCAG 2/2.1/2.2 A/AA tags. This is bounded automated evidence, not full accessibility certification.
+- `npm run test:e2e`: **35 production browser tests passed**, including 10 design regression tests, three messaging journeys and three annual-calendar journeys added after the initial 19-test release. Each journey has an isolated browser context. The main journeys pin the clock to 6 October 2026; the seed starts that school week.
+- Axe checks: no violations for the tested home page, annual form, form editor, populated inbox, annual calendar and expanded event panel with WCAG 2/2.1/2.2 A/AA tags. This is bounded automated evidence, not full accessibility certification.
 - Desktop and 390-pixel mobile screenshots inspected. Tested pages have no horizontal overflow; keyboard skip link/dialog interaction and 200% text-size checks pass.
 - Generated French form-receipt PDF rendered and visually inspected: readable text, French accents, page layout and demonstration/no-signature footer. PDFs are actual downloadable documents; uploaded filenames survive submission/review.
 - ICS parsed with `ical.js`: stable UID, revision/status, exclusive all-day end date, escaped/folded UTF-8 content, correct UTC instants and weekly Paris wall time across the October daylight-saving transition.
@@ -87,6 +87,15 @@ Source regression coverage is in `tests/e2e/layout.spec.ts`. The original deploy
 - Search covers accessible subjects, message text and correspondents, ignoring accents, case and surrounding spaces. Team assignment filters and policy-based visibility are preserved. The privacy explanation sits below the list so conversations remain prominent on phones.
 - Two domain regressions and three production browser journeys cover draft recovery/send/reopen, validation preservation, unread/read behavior, keyboard opening, search, excluded conversations and service assignment filters.
 - A populated 26-conversation fixture checks ordering, long subjects, alignment and overflow at 320, 390, 768 and 1440 pixels in French and English, plus 200% text and an automated accessibility scan. All three messaging journeys also passed in Firefox and WebKit (six additional local checks). Desktop and phone layouts were visually reviewed.
+
+## Annual calendar — 6 October 2026
+
+- The agenda opens with all twelve months of the September–August school year. Year navigation, month navigation, a return to today, and Year/Month/List controls provide access to the entire calendar. Selecting a month heading opens its larger month view.
+- Event dates are highlighted, today is outlined and dates containing only cancelled events use a dashed red treatment. Accessible date labels announce event counts; multiple events on one date share a panel. The panel shows scope, status, description, location and Paris-local times, with a path to the full event and its existing attendance/volunteer controls.
+- Weekly events expand to the demo’s four sessions using Paris wall time across DST. Multi-day events mark every covered date; all-day end dates and timed midnight ends remain exclusive. Six domain tests cover school-year/leap-year boundaries, day indexing, spans, recurrence, cancellations and scoped event sets.
+- Search and status filters apply to the calendar and list. Upcoming filtering checks each occurrence, so later recurring sessions remain visible. Export includes each matching event/series once, preserving its existing UID and recurrence; it does not flatten a series into duplicate calendar records.
+- Three production browser journeys cover year/month/list navigation, keyboard opening and focus restoration, event details, summer dates, recurring/shared dates, cancellation/search/privacy filters and ICS export. All three also passed in Firefox and WebKit (six additional local checks).
+- The dedicated calendar layout check covers all three views at 320, 390, 768 and 1440 pixels in French and English, plus 200% text and automated accessibility scans of the year view and expanded panel. Calendar filters wrap at enlarged text sizes and long list entries reflow. Screenshots of desktop/phone year, month and event-panel layouts were reviewed. These are resized browser engines, not physical devices.
 
 ## Remaining checks and limitations
 
