@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="12 16 334 112" role="img" aria-label="École de Peyrieu — Le crayon qui pousse">
+<title>École de Peyrieu — Le crayon qui pousse</title>
+<desc>Un crayon devient une jeune pousse. Un symbole de curiosité, de progrès et d’attention à la nature, facile à reconnaître en petit.</desc>
+<g transform="translate(0 8)"><path d="M61 49C39 51 28 37 29 18C49 18 63 30 61 49Z" fill="#f2c86d"/>
+<path d="M67 47C65 27 79 16 102 16C103 37 88 51 67 47Z" fill="#13758c"/>
+<path d="M51 56C51 53 53 51 56 51H73C76 51 78 53 78 56V91L64.5 111L51 91Z" fill="#153f56"/>
+<path d="M51 91H78L64.5 111Z" fill="#f2c86d"/>
+<path d="M60 104L64.5 111L69 104Z" fill="#153f56"/>
+<path d="M61 60V83" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/></g>
+<g fill="#153f56" font-family="Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Arial, sans-serif">
+<text x="151" y="61" font-size="24" font-weight="500" letter-spacing="-.45">École de</text>
+<text x="148" y="109" font-size="49" font-weight="700" letter-spacing="-1.6">Peyrieu</text>
+</g>
+</svg>
