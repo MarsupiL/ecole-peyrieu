@@ -180,6 +180,14 @@ textarea:focus-visible {
   outline: 3px solid #e99f13;
   outline-offset: 3px;
 }
+select:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+/* Keep native focus and keyboard behavior; only suppress pointer-origin rings. */
+select[data-pointer-focus='true']:focus {
+  outline: none;
+}
 ::selection {
   background: #bbdfe9;
 }

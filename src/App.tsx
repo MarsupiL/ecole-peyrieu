@@ -34,6 +34,7 @@ import { Administration } from './ui/Admin';
 import { Settings, Notifications, Help } from './ui/Settings';
 import type { Kind } from './domain/types';
 import { Card, Modal, FilePreview } from './ui/components';
+import { useSelectFocus } from './ui/useSelectFocus';
 import './style.css';
 const nav = [
   ['home', 'Accueil', 'Home', HomeIcon],
@@ -49,6 +50,7 @@ const nav = [
   ['administration', 'Administration', 'Administration', ShieldCheck],
 ] as const;
 export default function App() {
+  useSelectFocus();
   const [s, setS] = useState<State | null>(null);
   const ref = useRef<State | null>(null);
   const queue = useRef(Promise.resolve());
