@@ -112,6 +112,12 @@ Source regression coverage is in `tests/e2e/layout.spec.ts`. The original deploy
 - Two new production journeys verify old English preferences, retained local content, French-only form questions and poll choices, publication and reopening. Both journeys and the 390/1024-pixel editor checks also passed in Firefox and WebKit (eight additional local checks). Mobile home and form-editor screenshots were reviewed.
 - The complete 40-journey Chromium suite passes, including 330 French module/role/width layouts, expanded text, accessibility, messaging, month/list calendar, focus, offline and safe-update coverage. Earlier bilingual checks documented above describe historical releases; English switching is no longer a product requirement.
 
+## Selected logo — 6 October 2026
+
+- The user selected **Le crayon qui pousse** from four original SVG concepts. The full wordmark replaces the sidebar monogram; the compact mark appears in the phone/desktop header, loading screen and favicon.
+- 192/512 px app PNGs are generated from the same compact SVG. A separate 512 px maskable PNG and 180 px Apple touch PNG have opaque navy backgrounds. Their dimensions, manifest references and file formats were checked. Physical launcher/install behavior remains unverified.
+- The existing 40-journey production suite passes, including layout, accessibility, offline and safe-update flows. Desktop and phone screenshots were visually reviewed; the final phone header and offline flows were rechecked after a responsive style correction. No additional behavior tests were introduced for this visual change.
+
 ## Remaining checks and limitations
 
 - The public static demo is deployed. The live site is not a school production service; server authentication, private storage and real integrations remain outside its scope.
