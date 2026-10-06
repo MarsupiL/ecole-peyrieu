@@ -1220,6 +1220,105 @@ dialog::backdrop {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.message-count {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin: 0 0 12px;
+}
+.message-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+}
+.message-list > li + li {
+  border-top: 1px solid var(--line);
+}
+.message-list > li:first-child .message-row {
+  border-radius: 11px 11px 0 0;
+}
+.message-list > li:last-child .message-row {
+  border-radius: 0 0 11px 11px;
+}
+.message-list > li:only-child .message-row {
+  border-radius: 11px;
+}
+.message-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'subject date' 'people status' 'preview preview';
+  gap: 4px 20px;
+  width: 100%;
+  min-width: 0;
+  padding: 16px 20px;
+  border: 0;
+  border-radius: 0;
+  text-align: left;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.message-row-unread {
+  background: #f1f8fa;
+}
+.message-row:focus-visible {
+  outline-offset: -3px;
+}
+.message-subject,
+.message-people,
+.message-preview {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.message-subject {
+  grid-area: subject;
+  font-weight: 600;
+}
+.message-row-unread .message-subject {
+  font-weight: 750;
+}
+.message-people {
+  grid-area: people;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.message-preview {
+  grid-area: preview;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.message-date {
+  grid-area: date;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: right;
+}
+.message-status {
+  grid-area: status;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.unread-label {
+  color: #12677b;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+@media (max-width: 600px) {
+  .message-row {
+    grid-template-areas: 'subject subject' 'people people' 'preview preview' 'date status';
+    gap: 5px 12px;
+    padding: 14px;
+  }
+  .message-date {
+    margin-top: 3px;
+    text-align: left;
+  }
+}
 .conversation-message.mine {
   background: #e4f1f5;
   margin-left: auto;
