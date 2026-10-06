@@ -30,7 +30,7 @@ The bundle contains only app assets and harmless fictional samples. Source maps 
 
 ## Deployment verification checklist
 
-- Fresh visit: correct French UI, manifest/icons and fictional-data banner; EN switch and every persona/module work.
+- Fresh visit: correct French UI, manifest/icons and fictional-data banner; no language switch or English authoring fields; every persona/module works in French.
 - Direct URL: open a `#/form/outing` deep link on the project path, and deny `#/evaluation/other-report` as Alice.
 - Save a draft, reload, go offline after the worker has activated, and reopen the form. A first visit needs connectivity to download the app and sample assets.
 - Download a receipt and an ICS file; verify that URLs stay under the project path.
