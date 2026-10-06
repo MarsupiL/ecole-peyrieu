@@ -7,7 +7,7 @@ Date: **6 October 2026**. Build: app v1.0.0, schema 1. Test environments: macOS 
 - `npm run lint`: passed; no ESLint errors.
 - `npm test`: **30 domain tests passed**.
 - TypeScript compilation and `npm run build`: passed. Vite emitted a bundle-size advisory for the eagerly loaded full UI/PDF engine; no build failure.
-- `npm run test:e2e`: **19 production browser tests passed**. Each journey has an isolated browser context. The main journeys pin the clock to 6 October 2026; the seed starts that school week.
+- `npm run test:e2e`: **29 production browser tests passed**, including 10 design regression tests added after the initial 19-test release. Each journey has an isolated browser context. The main journeys pin the clock to 6 October 2026; the seed starts that school week.
 - Axe checks: no violations for the tested home page, annual form and form editor with WCAG 2/2.1/2.2 A/AA tags. This is bounded automated evidence, not full accessibility certification.
 - Desktop and 390-pixel mobile screenshots inspected. Tested pages have no horizontal overflow; keyboard skip link/dialog interaction and 200% text-size checks pass.
 - Generated French form-receipt PDF rendered and visually inspected: readable text, French accents, page layout and demonstration/no-signature footer. PDFs are actual downloadable documents; uploaded filenames survive submission/review.
@@ -67,12 +67,24 @@ npm run test:e2e
 
 Playwright starts/reuses the local production preview. The update test uses a separate ephemeral localhost server and two worker versions of the production bundle; it does not overwrite the build or interfere with another app. CI installs Chromium's Linux dependencies before the same browser suite.
 
+## Design review — 6 October 2026
+
+- Dropdowns have a consistent inset chevron and reserved text space. Form selections can wrap while retaining the underlying native select, accessible label, focus and option-change behavior. The reminder setting spans the card width, and form rows align when labels wrap.
+- Home and calendar share vertically stacked month/day badges. Both parts, including the calendar week strip, use Europe/Paris dates. A regression checks the date immediately after midnight at a month boundary.
+- Form/card columns adapt to available width; detail columns stack when space or enlarged text requires it. The phone profile selector uses its own row, and calendar toolbar actions align side by side.
+- The committed Chromium layout suite covers **660 module/role/language/width combinations**: 320, 390, 768, 1024 and 1440 pixels; five role personas; French and English; 13 modules plus director administration. It checks horizontal overflow, control bounds, visible selected values and stacked date geometry.
+- An additional local audit passed **240 combinations in Firefox 155 and 240 in WebKit 26.6**, at 390, 768 and 1440 pixels with parent, director and service personas in both languages. No page overflow, clipped selected labels or runtime errors were detected in those flows. These are desktop browser engines with resized viewports, not physical-device tests.
+- Editor dialogs, long wrapped selections, near-midnight dates, 200% text sizing, focus/native option changes and translated visible values passed ten additional checks across Firefox and WebKit. Native OS popup navigation could not be synthesized reliably by the macOS headless runners, including on an unstyled plain select; selection was verified through Playwright's native option API. Existing keyboard navigation and accessibility checks remain in the Chromium suite.
+- Screenshots of desktop/tablet/mobile home, calendar, settings, bookings and editor layouts were visually reviewed. Local images remain in ignored `test-results/design/`; they are not deployed.
+
+Source regression coverage is in `tests/e2e/layout.spec.ts`. The original deployment links above record the first release; subsequent pushes run the expanded suite before publication.
+
 ## Remaining checks and limitations
 
 - The public static demo is deployed. The live site is not a school production service; server authentication, private storage and real integrations remain outside its scope.
 - Physical iPhone/Android install, standalone behavior, browser storage pressure/eviction, background lifecycle and optional device notification permission/delivery remain unverified.
 - External calendar import/subscription refresh remains unverified. Parser evidence is not a claim that every calendar provider treats replacement imports identically.
-- Chrome/Chromium is tested; Safari and Firefox and assistive-technology walkthroughs remain untested. The app includes semantic controls, visible focus, reduced motion and print styling, but does not claim complete accessibility conformance.
+- Chromium, Firefox and WebKit engines have the bounded coverage described above. Physical Safari/iPhone and Android testing and assistive-technology walkthroughs remain untested. The app includes semantic controls, visible focus, reduced motion and print styling, but does not claim complete accessibility conformance.
 - Only explicit local user actions and the demo clock advance workflows. No simultaneous multi-user editing, cross-tab conflict resolution, live account authentication, background server scheduler or remote delivery is represented as working.
 - A saved draft survives reload/update. Unsaved editor/form changes must be saved before closing. Save failures preserve the current input and show an error; unexpected browser storage eviction can still remove local data.
 - Browser authorization, local confidential-file gating and anonymous-organiser views are demonstrators. Production needs server enforcement, genuinely private storage, operator-approved policies and account verification.
