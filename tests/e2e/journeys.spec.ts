@@ -433,7 +433,9 @@ test('representative escalation shares only a reviewed summary', async ({ page }
     .getByRole('button', { name: 'À propos de Préparons notre rencontre de classe', exact: true })
     .click();
   await expect(
-    page.getByText('Proposition relue de rencontre fictive.', { exact: true }),
+    page
+      .locator('.conversation-message')
+      .getByText('Proposition relue de rencontre fictive.', { exact: true }),
   ).toBeVisible();
   await route(page, 'topic/topic');
   await expect(page.getByRole('heading', { name: 'Accès indisponible' })).toBeVisible();
