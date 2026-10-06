@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Icône — Le crayon qui pousse"><rect width="128" height="128" rx="29" fill="#153f56"/><g transform="translate(12 12) scale(.8125)"><path d="M61 49C39 51 28 37 29 18C49 18 63 30 61 49Z" fill="#f2c86d"/>
+<path d="M67 47C65 27 79 16 102 16C103 37 88 51 67 47Z" fill="#83cbd2"/>
+<path d="M51 56C51 53 53 51 56 51H73C76 51 78 53 78 56V91L64.5 111L51 91Z" fill="#ffffff"/>
+<path d="M51 91H78L64.5 111Z" fill="#f2c86d"/>
+<path d="M60 104L64.5 111L69 104Z" fill="#ffffff"/>
+<path d="M61 60V83" stroke="#153f56" stroke-width="4" stroke-linecap="round"/></g></svg>
