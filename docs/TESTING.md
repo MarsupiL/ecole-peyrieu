@@ -7,7 +7,7 @@ Date: **6 October 2026**. Build: app v1.0.0, schema 1. Test environments: macOS 
 - `npm run lint`: passed; no ESLint errors.
 - `npm test`: **38 domain tests passed**.
 - TypeScript compilation and `npm run build`: passed. Vite emitted a bundle-size advisory for the eagerly loaded full UI/PDF engine; no build failure.
-- `npm run test:e2e`: **35 production browser tests passed**, including 10 design regression tests, three messaging journeys and three annual-calendar journeys added after the initial 19-test release. Each journey has an isolated browser context. The main journeys pin the clock to 6 October 2026; the seed starts that school week.
+- `npm run test:e2e`: **37 production browser tests passed**, including 10 design regressions, three messaging journeys, three annual-calendar journeys and two dropdown-focus journeys added after the initial 19-test release. Each journey has an isolated browser context. The main journeys pin the clock to 6 October 2026; the seed starts that school week.
 - Axe checks: no violations for the tested home page, annual form, form editor, populated inbox, annual calendar and expanded event panel with WCAG 2/2.1/2.2 A/AA tags. This is bounded automated evidence, not full accessibility certification.
 - Desktop and 390-pixel mobile screenshots inspected. Tested pages have no horizontal overflow; keyboard skip link/dialog interaction and 200% text-size checks pass.
 - Generated French form-receipt PDF rendered and visually inspected: readable text, French accents, page layout and demonstration/no-signature footer. PDFs are actual downloadable documents; uploaded filenames survive submission/review.
@@ -96,6 +96,13 @@ Source regression coverage is in `tests/e2e/layout.spec.ts`. The original deploy
 - Search and status filters apply to the calendar and list. Upcoming filtering checks each occurrence, so later recurring sessions remain visible. Export includes each matching event/series once, preserving its existing UID and recurrence; it does not flatten a series into duplicate calendar records.
 - Three production browser journeys cover year/month/list navigation, keyboard opening and focus restoration, event details, summer dates, recurring/shared dates, cancellation/search/privacy filters and ICS export. All three also passed in Firefox and WebKit (six additional local checks).
 - The dedicated calendar layout check covers all three views at 320, 390, 768 and 1440 pixels in French and English, plus 200% text and automated accessibility scans of the year view and expanded panel. Calendar filters wrap at enlarged text sizes and long list entries reflow. Screenshots of desktop/phone year, month and event-panel layouts were reviewed. These are resized browser engines, not physical devices.
+
+## Dropdown focus — 6 October 2026
+
+- Native dropdowns no longer keep the large orange outline after mouse/touch selection. Pointer origin is tracked only on the selected control; its native focus and selected value remain intact.
+- Keyboard navigation restores a 2px blue focus ring. Switching from keyboard to pointer use suppresses it again; leaving the control clears the pointer marker. Controls without a recorded pointer interaction retain the browser’s normal focus-visible behavior.
+- Delegated handling covers plain toolbar selects, wrapped form/calendar selects, associated-label activation and dynamically rendered controls. Other control types retain their existing focus styling.
+- Two production browser regressions cover actual mouse/touch activation, value changes, retained focus, Tab/Shift+Tab return, associated labels, focus transfer and translated settings. Both journeys also passed in Firefox and WebKit (four additional checks). Option values are selected with Playwright’s native option API; these tests do not claim to verify every physical OS picker or screen-reader interaction.
 
 ## Remaining checks and limitations
 
