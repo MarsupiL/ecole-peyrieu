@@ -172,9 +172,13 @@ export default function App() {
   if (!s || !a)
     return (
       <main className="loading">
-        <span className="brand-mark">
-          P<span>•</span>
-        </span>
+        <img
+          className="brand-mark loading-mark"
+          src={`${import.meta.env.BASE_URL}favicon.svg`}
+          alt=""
+          width="64"
+          height="64"
+        />
         <h1>Peyrieu</h1>
         <p>Chargement de la démonstration…</p>
       </main>
@@ -205,12 +209,13 @@ export default function App() {
       <div className="app-layout">
         <aside className={`sidebar ${menu ? 'is-open' : ''}`}>
           <a className="brand" href="#/home">
-            <span className="brand-mark">
-              P<span>•</span>
-            </span>
-            <span>
-              Peyrieu<small>{t('LE LIEN ÉCOLE–FAMILLE', 'SCHOOL & FAMILY')}</small>
-            </span>
+            <img
+              className="brand-logo"
+              src={`${import.meta.env.BASE_URL}logo.svg`}
+              alt="École de Peyrieu · Accueil"
+              width="334"
+              height="112"
+            />
           </a>
           <div className="sidebar-label">{t('MON ESPACE', 'MY WORKSPACE')}</div>
           <nav aria-label={t('Navigation principale', 'Main navigation')}>
@@ -265,6 +270,13 @@ export default function App() {
               {menu ? <X /> : <Menu />}
             </button>
             <div className="workspace-label">
+              <img
+                className="brand-mark"
+                src={`${import.meta.env.BASE_URL}favicon.svg`}
+                alt=""
+                width="28"
+                height="28"
+              />
               {t('École de Peyrieu', 'Peyrieu School')}
               <span>/</span>
               <strong>{t(...roles[a.roles.at(-1)!])}</strong>

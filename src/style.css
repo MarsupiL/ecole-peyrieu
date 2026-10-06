@@ -266,49 +266,24 @@ select[data-pointer-focus='true']:focus {
   padding: 25px 18px 17px;
 }
 .brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 1.55rem;
-  color: #16384c;
-  line-height: 1.1;
-  padding: 0 10px 30px;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-}
-.brand:hover {
-  text-decoration: none;
-}
-.brand small {
   display: block;
-  font-size: 0.6rem;
-  letter-spacing: 0.12em;
-  margin-top: 7px;
-  color: #6c7c89;
-  font-weight: 600;
+  padding: 0 10px 30px;
+}
+.brand-logo {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 .brand-mark {
-  width: 42px;
-  height: 46px;
-  background: var(--navy);
-  border-radius: 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  color: #fff;
-  font-size: 31px;
-  font-weight: 650;
-  letter-spacing: -3px;
-  padding-right: 6px;
+  display: block;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
 }
-.brand-mark > span {
-  color: #f2c86d;
-  position: absolute;
-  right: 6px;
-  bottom: 1px;
-  font-size: 29px;
+.loading-mark {
+  width: 64px;
+  height: 64px;
+  margin-inline: auto;
 }
 .sidebar-label {
   font-size: 0.64rem;
@@ -1794,10 +1769,6 @@ pre {
   }
   .brand {
     padding: 0 5px 25px;
-    gap: 10px;
-  }
-  .brand small {
-    font-size: 0.53rem;
   }
   .main-content {
     padding: 25px 22px;
@@ -1846,7 +1817,8 @@ pre {
     grid-template-columns: 44px minmax(0, 1fr) 44px;
   }
   .workspace-label {
-    display: block;
+    display: flex;
+    gap: 8px;
     font-size: 0.8rem;
   }
   .workspace-label > span,
@@ -2082,7 +2054,6 @@ pre {
   }
 }
 /* Readable text and AA contrast across the compact interface. */
-.brand small,
 .sidebar-label,
 .local-status,
 .local-status small,
@@ -2098,15 +2069,6 @@ pre {
   color: #526777;
   font-size: 0.8rem;
 }
-.brand small {
-  font-size: 0.75rem;
-  line-height: 1.4;
-  letter-spacing: 0.055em;
-}
-.brand {
-  font-size: 1.4rem;
-  align-items: flex-start;
-}
 .sidebar-label {
   font-size: 0.75rem;
 }
@@ -2115,9 +2077,6 @@ pre {
 }
 .local-status {
   font-size: 0.75rem;
-}
-.brand-mark {
-  margin-top: 1px;
 }
 .eyebrow,
 .demo-card .eyebrow,
