@@ -177,14 +177,6 @@ export function EntryDetail({ id, kind }: { id: string; kind: Kind }) {
           <Badge value={e.status} />
         </div>
         <p className="detail-body padded">{e.body[locale] || e.body.fr}</p>
-        {!e.body[locale] && (
-          <small>
-            {t(
-              'Texte original, traduction non fournie.',
-              'Original text; no translation supplied.',
-            )}
-          </small>
-        )}
         <Photo e={e} />
         {kind === 'event' && canManage(s, a, e) && e.status !== 'cancelled' && (
           <button

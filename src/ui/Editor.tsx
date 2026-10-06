@@ -166,38 +166,18 @@ export function Editor({
               </select>
             </Field>
           )}
-          <div className="form-grid">
-            <Field label={t('Titre en français *', 'French title *')}>
-              <input
-                required
-                value={e.title.fr}
-                onChange={(ev) => put({ title: { ...e.title, fr: ev.target.value } })}
-              />
-            </Field>
-            <Field label={t('Titre en anglais', 'English title')}>
-              <input
-                value={e.title.en}
-                onChange={(ev) => put({ title: { ...e.title, en: ev.target.value } })}
-              />
-            </Field>
-          </div>
-          <Field label={t('Texte en français *', 'French description *')}>
+          <Field label="Titre *">
+            <input
+              required
+              value={e.title.fr}
+              onChange={(ev) => put({ title: { ...e.title, fr: ev.target.value } })}
+            />
+          </Field>
+          <Field label="Texte *">
             <textarea
               required
               value={e.body.fr}
               onChange={(ev) => put({ body: { ...e.body, fr: ev.target.value } })}
-            />
-          </Field>
-          <Field
-            label={t('Texte en anglais', 'English description')}
-            hint={t(
-              'Sans traduction, le texte original est affiché.',
-              'When no translation is supplied, the original is shown.',
-            )}
-          >
-            <textarea
-              value={e.body.en}
-              onChange={(ev) => put({ body: { ...e.body, en: ev.target.value } })}
             />
           </Field>
           {kind !== 'evaluation' && (
@@ -369,19 +349,11 @@ export function Editor({
                     </button>
                   </div>
                   <div className="form-grid">
-                    <Field label={t('Libellé français', 'French label')}>
+                    <Field label="Libellé">
                       <input
                         value={f.label.fr}
                         onChange={(ev) =>
                           patchField(f.id, { label: { ...f.label, fr: ev.target.value } })
-                        }
-                      />
-                    </Field>
-                    <Field label={t('Libellé anglais', 'English label')}>
-                      <input
-                        value={f.label.en}
-                        onChange={(ev) =>
-                          patchField(f.id, { label: { ...f.label, en: ev.target.value } })
                         }
                       />
                     </Field>
@@ -444,20 +416,14 @@ export function Editor({
                     </Field>
                   )}
                   {f.options && (
-                    <Field
-                      label={t(
-                        'Options : français | anglais, une par ligne',
-                        'Options: French | English, one per line',
-                      )}
-                    >
+                    <Field label="Options, une par ligne">
                       <textarea
-                        value={f.options.map((o) => `${o.fr} | ${o.en}`).join('\n')}
+                        value={f.options.map((o) => o.fr).join('\n')}
                         onChange={(ev) =>
                           patchField(f.id, {
-                            options: ev.target.value.split('\n').map((line) => {
-                              const [fr, en] = line.split('|');
-                              return tr(fr.trim(), en?.trim() ?? '');
-                            }),
+                            options: ev.target.value
+                              .split('\n')
+                              .map((line, i) => tr(line, f.options?.[i]?.en ?? '')),
                           })
                         }
                       />
@@ -599,20 +565,14 @@ export function Editor({
                   <option value="rating">{t('Échelle de 1 à 5', 'Rating from 1 to 5')}</option>
                 </select>
               </Field>
-              <Field
-                label={t(
-                  'Choix : français | anglais, un par ligne',
-                  'Choices: French | English, one per line',
-                )}
-              >
+              <Field label="Choix, un par ligne">
                 <textarea
-                  value={e.options.map((o) => `${o.fr} | ${o.en}`).join('\n')}
+                  value={e.options.map((o) => o.fr).join('\n')}
                   onChange={(ev) =>
                     put({
-                      options: ev.target.value.split('\n').map((line) => {
-                        const [fr, en] = line.split('|');
-                        return tr(fr.trim(), en?.trim() ?? '');
-                      }),
+                      options: ev.target.value
+                        .split('\n')
+                        .map((line, i) => tr(line, e.options[i]?.en ?? '')),
                     })
                   }
                 />
