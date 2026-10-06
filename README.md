@@ -66,7 +66,7 @@ No live backend, multi-device synchronization, email sender, remote push sender,
 
 ## Visual identity
 
-The selected logo is **Le crayon qui pousse**: a pencil with two leaves in the app’s navy, teal and soft gold. `public/logo.svg` is the full wordmark; `public/favicon.svg` is the compact mark used in the header and loading screen. Run `node scripts/icons.mjs` from this directory after changing the compact SVG to regenerate the 192/512 px app icons, opaque maskable icon and 180 px Apple touch icon. The manifest and HTML reference these local assets; the service worker includes them for offline use.
+The selected logo is **Le crayon qui pousse**: a pencil with two leaves in the app’s navy, teal and soft gold. `public/logo.svg` is the full wordmark; `public/favicon.svg` is the compact source used in the header and loading screen. Run `node scripts/icons.mjs` from this directory after changing the compact SVG to regenerate the SVG/32 px PNG browser favicons, 192/512 px app icons, opaque maskable icon and 180 px Apple touch icon. HTML, the manifest and notifications use the `crayon` filenames so old icon URLs do not retain the previous identity. Legacy assets remain available for older installations. The service worker includes all icons for offline use. The manifest URL, app ID, scope and start URL remain stable; updating installed launcher icons follows each platform’s own refresh behavior.
 
 ## Architecture
 
