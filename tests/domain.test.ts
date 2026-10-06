@@ -304,7 +304,7 @@ describe('requests, notifications and calendar', () => {
       actor(s, 'alice'),
       [...events, events[0]],
       'fr',
-      'https://example.invalid/peyrieu-school-demo/',
+      'https://example.invalid/ecole-peyrieu/',
     );
     const root = new ICAL.Component(ICAL.parse(text));
     expect(root.getAllSubcomponents('vevent')).toHaveLength(events.length);
