@@ -25,6 +25,8 @@ import {
   setConsent,
   advanceClock,
   message,
+  createConversation,
+  saveDraft,
   handleRequest,
   reserve,
   bookingStatus,
@@ -36,6 +38,38 @@ import { calendar, csv, validateFile, makePdf } from '../src/domain/exports';
 const setup = () => seed('2026-10-05T08:00:00.000Z');
 const actor = (s: State, id: string) => s.adults.find((a) => a.id === id)!;
 const entry = (s: State, id: string) => s.entries.find((e) => e.id === id)!;
+describe('conversation drafts', () => {
+  it('clears only the matching sender draft after a successful send', () => {
+    let s = saveDraft(setup(), 'alice', 'compose:new', 'My draft');
+    s = saveDraft(s, 'alice', 'compose:welcome', 'Linked draft');
+    s = saveDraft(s, 'thomas', 'compose:new', 'Other guardian draft');
+    const sent = createConversation(s, 'alice', 'Subject', 'My draft', ['emma']);
+    expect(sent.drafts['alice:compose:new']).toBeUndefined();
+    expect(sent.drafts['alice:compose:welcome']).toBe('Linked draft');
+    expect(sent.drafts['thomas:compose:new']).toBe('Other guardian draft');
+    expect(s.drafts['alice:compose:new']).toBe('My draft');
+    const linked = createConversation(
+      sent,
+      'alice',
+      'Reply',
+      'Linked draft',
+      ['emma'],
+      undefined,
+      'welcome',
+    );
+    expect(linked.drafts['alice:compose:welcome']).toBeUndefined();
+  });
+  it('preserves the saved draft when validation or authorisation fails', () => {
+    const s = saveDraft(setup(), 'alice', 'compose:new', 'Keep this draft');
+    expect(() => createConversation(s, 'alice', '', 'Keep this draft', ['emma'])).toThrow(
+      'required',
+    );
+    expect(() => createConversation(s, 'alice', 'Subject', 'Keep this draft', ['luc'])).toThrow(
+      'denied',
+    );
+    expect(s.drafts['alice:compose:new']).toBe('Keep this draft');
+  });
+});
 describe('central policy and mutable memberships', () => {
   it('deduplicates siblings, denies other classes and named private conversations', () => {
     const s = setup();
