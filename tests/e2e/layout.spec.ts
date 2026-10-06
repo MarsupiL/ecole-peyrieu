@@ -147,6 +147,7 @@ test('date badges use the same Paris calendar day and month near midnight', asyn
   await page.getByRole('button', { name: 'Publier', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.goto('./#/calendar');
+  await page.getByRole('button', { name: 'Liste', exact: true }).click();
   const event = page
     .locator('.card')
     .filter({ has: page.getByRole('heading', { name: 'Test du premier novembre', exact: true }) });
