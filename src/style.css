@@ -1470,13 +1470,6 @@ pre {
   font-size: 1.2rem;
   text-transform: capitalize;
 }
-.calendar-period h2 > span {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--muted);
-  text-transform: none;
-}
 .calendar-view-actions {
   flex-wrap: wrap;
 }
@@ -1539,7 +1532,7 @@ pre {
 }
 .school-calendar {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
 }
 .calendar-month {
@@ -1548,18 +1541,6 @@ pre {
   background: white;
   border: 1px solid var(--line);
   border-radius: 12px;
-}
-.calendar-month h3 {
-  margin: 0 0 8px;
-}
-.calendar-month-title {
-  width: 100%;
-  justify-content: space-between;
-  border: 0;
-  padding: 4px 6px;
-  color: var(--navy);
-  text-transform: capitalize;
-  font-size: 1rem;
 }
 .month-table {
   table-layout: fixed;
@@ -1626,10 +1607,7 @@ pre {
 .month-day-today {
   box-shadow: inset 0 0 0 2px var(--navy);
 }
-.school-calendar-month {
-  grid-template-columns: minmax(0, 1fr);
-}
-.school-calendar-month .month-day {
+.school-calendar .month-day {
   min-height: 112px;
   padding: 7px 4px;
   gap: 4px;
@@ -1681,7 +1659,7 @@ pre {
   .calendar-month {
     padding: 10px;
   }
-  .school-calendar-month .month-day {
+  .school-calendar .month-day {
     min-height: 62px;
     padding-inline: 0;
   }
