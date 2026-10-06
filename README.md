@@ -64,6 +64,10 @@ Uploads accept PDF, PNG, JPEG and WebP up to 10 MB after extension, MIME and fil
 
 No live backend, multi-device synchronization, email sender, remote push sender, payment, real reservation, qualified signature or official school integration is included. Anonymous survey answer/identity separation applies to organiser views and exports; it is not anonymity against a person inspecting the complete local database. Optional device notifications require an explicit user action and browser permission. They are not reliable background delivery. The demo clock runs only when advanced in the app.
 
+## Visual identity
+
+The selected logo is **Le crayon qui pousse**: a pencil with two leaves in the app’s navy, teal and soft gold. `public/logo.svg` is the full wordmark; `public/favicon.svg` is the compact mark used in the header and loading screen. Run `node scripts/icons.mjs` from this directory after changing the compact SVG to regenerate the 192/512 px app icons, opaque maskable icon and 180 px Apple touch icon. The manifest and HTML reference these local assets; the service worker includes them for offline use.
+
 ## Architecture
 
 React + TypeScript + Vite; `idb` for IndexedDB, jsPDF for generated documents, Lucide for icons. Dependencies and CI actions are pinned.
