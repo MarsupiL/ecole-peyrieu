@@ -2,11 +2,15 @@
 
 ## Current status — 6 October 2026
 
-The production build is verified locally at `/peyrieu-school-demo/`. It has **not been published**. The connected GitHub profile was readable, but the connector returned no accessible repositories and no installed repository permissions. No repository, visibility change, Pages site or workflow run was created remotely.
+**Published and verified:** [live demonstration](https://marsupil.github.io/peyrieu-school-demo/) · [dedicated public repository](https://github.com/MarsupiL/peyrieu-school-demo) · [successful verification and deployment run](https://github.com/MarsupiL/peyrieu-school-demo/actions/runs/37425469373).
+
+The initial deployed source is commit `4bf2bed148d2120a5abc05bd204abc98f8272a49`. GitHub's Ubuntu runner passed lint, 30 domain tests, TypeScript/build and 19 Chromium browser tests before deploying. All 53 uploaded source files matched the locally verified project, and all 15 files fetched from the HTTPS site matched the local production build byte for byte. A fresh isolated browser verified hosted French/English UI, local submission persistence, a PDF receipt download, a denied protected deep link and offline reload under the activated service worker. Its 30 requests were same-origin reads; no external or write requests and no page errors occurred.
+
+Pages uses **GitHub Actions**. The local `app/` repository tracks `origin/main` at the dedicated repository. The source was published through the signed-in GitHub browser because the connector lacked write access. No existing repository visibility was changed. Future updates can use an authenticated Git push or the repository's normal web editor/upload controls.
 
 Only the dedicated `app` directory is prepared for publication. Do not upload its parent workspace, the personal requirements/handoff file, unrelated projects, browser databases, local test artifacts or credentials. No paid service or purchased domain is needed for this static fictional-data demo.
 
-## Publish the dedicated project
+## Recreate the deployment in another dedicated repository
 
 1. Create a new repository named `peyrieu-school-demo` in the verified account. Select visibility appropriate to the actual plan; a public repository is the default free-account route. Do not make an existing private repository public or use an account's root-site repository.
 2. Grant the GitHub connection access to this new repository, or authenticate Git locally using your normal user-controlled flow. Never paste tokens into source files or this README.
@@ -24,7 +28,7 @@ Only the dedicated `app` directory is prepared for publication. Do not upload it
 
 The bundle contains only app assets and harmless fictional samples. Source maps and browser test traces are not published. It has no configuration secrets or live service API credentials. The initial JavaScript bundle currently includes the full UI and PDF engine; Vite reports a bundle-size advisory. This is a performance improvement opportunity, not a failed build.
 
-## Verify after publication
+## Deployment verification checklist
 
 - Fresh visit: correct French UI, manifest/icons and fictional-data banner; EN switch and every persona/module work.
 - Direct URL: open a `#/form/outing` deep link on the project path, and deny `#/evaluation/other-report` as Alice.

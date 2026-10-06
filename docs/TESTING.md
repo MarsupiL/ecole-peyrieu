@@ -1,6 +1,6 @@
 # Implementation acceptance report
 
-Date: **6 October 2026**. Build: app v1.0.0, schema 1. Test environment: macOS, Node.js, bundled Playwright Chromium, production Vite output served at `/peyrieu-school-demo/`.
+Date: **6 October 2026**. Build: app v1.0.0, schema 1. Test environments: macOS and GitHub Actions Ubuntu, Node.js 24, Playwright Chromium, production Vite output served at `/peyrieu-school-demo/`.
 
 ## Recorded results
 
@@ -13,6 +13,8 @@ Date: **6 October 2026**. Build: app v1.0.0, schema 1. Test environment: macOS, 
 - Generated French form-receipt PDF rendered and visually inspected: readable text, French accents, page layout and demonstration/no-signature footer. PDFs are actual downloadable documents; uploaded filenames survive submission/review.
 - ICS parsed with `ical.js`: stable UID, revision/status, exclusive all-day end date, escaped/folded UTF-8 content, correct UTC instants and weekly Paris wall time across the October daylight-saving transition.
 - Offline form submission and a real two-version service-worker update tested. The new worker waits for explicit activation, preserves a saved draft and replaces only its own app cache.
+- [GitHub verification and deployment](https://github.com/MarsupiL/peyrieu-school-demo/actions/runs/37425469373) passed the same lint, 30 domain tests, build and 19 browser tests for source commit `4bf2bed148d2120a5abc05bd204abc98f8272a49`.
+- [Public HTTPS site](https://marsupil.github.io/peyrieu-school-demo/) verified: all 15 served production files matched the local build byte for byte. A fresh isolated hosted browser passed service-worker activation, offline reload, persisted form submission, PDF receipt download, language switching and protected deep-link denial. All 30 observed requests were same-origin reads, with no external/write requests or page errors.
 - Dependency installation reported no known audit vulnerabilities at implementation time. This is a point-in-time package check, not an application security assessment.
 
 Artifacts from the latest browser run are local in `test-results/` and `playwright-report/`. They are ignored by Git and excluded from deployment. The HTML report can be opened with `npx playwright show-report`. Source evidence is in `tests/domain.test.ts`, `tests/e2e/journeys.spec.ts` and `tests/e2e/update.spec.ts`.
@@ -49,8 +51,8 @@ Artifacts from the latest browser run are local in `test-results/` and `playwrig
 | AC24 | Passed locally / physical checks not tested               | Manifest/scope/assets and offline production form flow verified. Two-version worker test verifies explicit update and draft/cache preservation. Physical Home Screen installation/launch and device notifications not tested.                           |
 | AC25 | Passed for tested surfaces / specialist review not tested | Axe on home/form/editor, desktop/mobile inspection, no clipping on key details, keyboard checks and 200% text-size test. No VoiceOver/TalkBack/NVDA or comprehensive device/accessibility audit.                                                        |
 | AC26 | Passed                                                    | Revocation, representative expiry and rollover domain tests; changing Louise's class in admin immediately denies the former class post.                                                                                                                 |
-| AC27 | Passed locally / remote deployment not tested             | Actual production project path, deep routes, offline and update suite pass. Pinned GitHub Actions workflow prepared. No repository permission, remote CI execution or public Pages deployment yet.                                                      |
-| AC28 | Passed local review / hosted review not tested            | Fictional seed/public assets, no analytics or outbound submission endpoints in source; uploads in IndexedDB; reset tests; deploy artifact excludes personal handoff and local reports. Public-host inspection waits for deployment.                     |
+| AC27 | Passed                                                   | GitHub Actions lint, 30 domain tests, build and 19 browser tests passed before Pages deployment. Actual public project path, deep-link denial, offline reload and downloads verified; all 15 hosted files match the tested build.                       |
+| AC28 | Passed for tested local and hosted flows                 | Fictional seed/public assets; uploads in IndexedDB; reset tests; artifact excludes personal handoff and local reports. Hosted smoke test observed only 30 same-origin GET requests, with no external submissions or page errors.                        |
 | AC29 | Passed / simulated                                        | Local feedback creation/export/reset browser journey; no recipient or network transmission.                                                                                                                                                             |
 | AC30 | Passed local inventory                                    | All modules are reachable under five role families in both locales without runtime errors; broad domain/browser journeys above exercise the connected workflows. External counterparts remain explicitly simulated.                                     |
 
@@ -67,7 +69,7 @@ Playwright starts/reuses the local production preview. The update test uses a se
 
 ## Remaining checks and limitations
 
-- Publishing requires access to a new dedicated GitHub repository and enabling Pages with Actions. The identity lookup alone is insufficient. No remote CI or live URL is claimed.
+- The public static demo is deployed. The live site is not a school production service; server authentication, private storage and real integrations remain outside its scope.
 - Physical iPhone/Android install, standalone behavior, browser storage pressure/eviction, background lifecycle and optional device notification permission/delivery remain unverified.
 - External calendar import/subscription refresh remains unverified. Parser evidence is not a claim that every calendar provider treats replacement imports identically.
 - Chrome/Chromium is tested; Safari and Firefox and assistive-technology walkthroughs remain untested. The app includes semantic controls, visible focus, reduced motion and print styling, but does not claim complete accessibility conformance.
@@ -75,4 +77,4 @@ Playwright starts/reuses the local production preview. The update test uses a se
 - A saved draft survives reload/update. Unsaved editor/form changes must be saved before closing. Save failures preserve the current input and show an error; unexpected browser storage eviction can still remove local data.
 - Browser authorization, local confidential-file gating and anonymous-organiser views are demonstrators. Production needs server enforcement, genuinely private storage, operator-approved policies and account verification.
 
-The application uses the permitted local-build handoff fallback while repository access is unavailable. No agreed module was replaced by an inert placeholder, and no real school data or signature was used.
+The application is published from its dedicated repository; the local build archive remains available as a portable handoff. No agreed module was replaced by an inert placeholder, and no real school data or signature was used.
