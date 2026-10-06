@@ -1,7 +1,17 @@
 import { useState } from 'react';
 import { Download, CalendarDays, Users, Link2 } from 'lucide-react';
 import { useApp, formatDate, services, statusNames } from './context';
-import { Card, PageTitle, Field, Badge, AddButton, Empty, Modal, ExternalLink } from './components';
+import {
+  Card,
+  PageTitle,
+  Field,
+  Badge,
+  AddButton,
+  Empty,
+  Modal,
+  ExternalLink,
+  DateBadge,
+} from './components';
 import {
   visibleEntries,
   canAuthor,
@@ -57,7 +67,11 @@ export function Calendar() {
                 timeZone: 'Europe/Paris',
               }).format(d)}
             </span>
-            <strong>{d.getUTCDate()}</strong>
+            <strong>
+              {new Intl.DateTimeFormat(locale, { day: 'numeric', timeZone: 'Europe/Paris' }).format(
+                d,
+              )}
+            </strong>
             {new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'Europe/Paris' }).format(
               d,
             )}
@@ -101,17 +115,8 @@ export function Calendar() {
         {events.map((e) => (
           <Card key={e.id}>
             <div className="row between">
-              <div className="row">
-                <span className="calendar-date">
-                  <small>
-                    {e.start &&
-                      new Intl.DateTimeFormat(locale, {
-                        month: 'short',
-                        timeZone: 'Europe/Paris',
-                      }).format(new Date(e.start))}
-                  </small>
-                  <strong>{e.start && new Date(e.start).getUTCDate()}</strong>
-                </span>
+              <div className="event-summary">
+                {e.start && <DateBadge value={e.start} />}
                 <div>
                   <button className="title-button" onClick={() => open(e)}>
                     <h3>{e.title[locale] || e.title.fr}</h3>

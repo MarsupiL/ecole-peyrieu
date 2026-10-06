@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   useId,
@@ -8,6 +9,8 @@ import {
   isValidElement,
   type ReactElement,
   type ReactNode,
+  type SelectHTMLAttributes,
+  type RefAttributes,
 } from 'react';
 import { X, Download, Paperclip, ArrowUpRight, Lock, Plus } from 'lucide-react';
 import { useApp, statusNames, services, formatDate, errors } from './context';
@@ -16,6 +19,22 @@ import { canReadFile, canRead, canAuthor, guardian } from '../domain/policy';
 import { change, requireRule } from '../domain/engine';
 import { validateFile, download } from '../domain/exports';
 import { repository } from '../data/repository';
+export function DateBadge({ value }: { value: string }) {
+  const { locale } = useApp();
+  const parts = new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : 'en-GB', {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'Europe/Paris',
+  }).formatToParts(new Date(value.length === 10 ? `${value}T12:00:00Z` : value));
+  return (
+    <time className="calendar-date" dateTime={value} aria-label={formatDate(value, locale)}>
+      <span className="calendar-month">
+        {parts.find((part) => part.type === 'month')?.value.replace(/\.$/, '')}
+      </span>
+      <span className="calendar-day">{parts.find((part) => part.type === 'day')?.value}</span>
+    </time>
+  );
+}
 export function Badge({ value }: { value: string }) {
   const { t } = useApp();
   return (
@@ -55,14 +74,46 @@ export function PageTitle({
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <section className={`card ${className}`}>{children}</section>;
 }
+function FormSelect({
+  control,
+  id,
+}: {
+  control: ReactElement<SelectHTMLAttributes<HTMLSelectElement> & RefAttributes<HTMLSelectElement>>;
+  id: string;
+}) {
+  const ref = useRef<HTMLSelectElement>(null);
+  const [text, setText] = useState('');
+  // The real select retains native focus, keyboard navigation and mobile pickers.
+  // Its visible value can wrap, including after a controlled value/locale change.
+  useLayoutEffect(() => {
+    setText(ref.current?.selectedOptions[0]?.textContent ?? '');
+  });
+  return (
+    <div className="select-control">
+      {cloneElement(control, {
+        id,
+        ref,
+        onChange: (event) => {
+          setText(event.currentTarget.selectedOptions[0]?.textContent ?? '');
+          control.props.onChange?.(event);
+        },
+      })}
+      <span className="select-value" aria-hidden="true">
+        {text}
+      </span>
+    </div>
+  );
+}
 export function Field({
   label,
   children,
   hint,
+  className = '',
 }: {
   label: string;
   children: ReactNode;
   hint?: string;
+  className?: string;
 }) {
   const id = useId();
   const nodes = Children.toArray(children);
@@ -73,11 +124,20 @@ export function Field({
       ['input', 'textarea', 'select'].includes(c.type),
   );
   return (
-    <div className="field">
+    <div className={`field ${className}`}>
       {index >= 0 ? <label htmlFor={id}>{label}</label> : <span>{label}</span>}
-      {nodes.map((c, i) =>
-        i === index ? cloneElement(c as ReactElement<{ id?: string }>, { id }) : c,
-      )}
+      {nodes.map((c, i) => {
+        if (i !== index) return c;
+        if (isValidElement(c) && c.type === 'select')
+          return (
+            <FormSelect
+              key={i}
+              id={id}
+              control={c as ReactElement<SelectHTMLAttributes<HTMLSelectElement>>}
+            />
+          );
+        return cloneElement(c as ReactElement<{ id?: string }>, { id });
+      })}
       {hint && <small>{hint}</small>}
     </div>
   );

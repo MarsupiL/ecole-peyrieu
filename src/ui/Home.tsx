@@ -20,7 +20,7 @@ import {
   childrenFor,
   responseChildren,
 } from '../domain/policy';
-import { Card, PageTitle, EntryCard, AudienceLabel, Empty } from './components';
+import { Card, PageTitle, EntryCard, AudienceLabel, Empty, DateBadge } from './components';
 export function Home() {
   const { s, a, t, locale, go, open } = useApp();
   const kids = guardianChildren(s, a);
@@ -208,15 +208,7 @@ export function Home() {
             </div>
             {events.slice(0, 3).map((e) => (
               <button className="agenda-row" key={e.id} onClick={() => open(e)}>
-                <span className="calendar-date">
-                  <small>
-                    {new Intl.DateTimeFormat(locale, {
-                      month: 'short',
-                      timeZone: 'Europe/Paris',
-                    }).format(new Date(e.start!))}
-                  </small>
-                  <strong>{new Date(e.start!).getUTCDate()}</strong>
-                </span>
+                <DateBadge value={e.start!} />
                 <span>
                   <strong>{e.title[locale] || e.title.fr}</strong>
                   <small>

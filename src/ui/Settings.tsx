@@ -187,7 +187,7 @@ export function Settings() {
           <h2>
             <Bell size={20} /> {t('Notifications et tranquillité', 'Notifications & quiet hours')}
           </h2>
-          <div className="form-grid">
+          <div className="form-grid quiet-hours-grid">
             <Field label={t('Début du silence (heure de Paris)', 'Quiet hours start (Paris time)')}>
               <input
                 type="number"
@@ -220,7 +220,7 @@ export function Settings() {
                 }}
               />
             </Field>
-            <Field label={t('Rappel des événements', 'Event reminders')}>
+            <Field className="wide" label={t('Rappel des événements', 'Event reminders')}>
               <select
                 value={a.eventReminder}
                 onChange={(ev) => {
