@@ -50,6 +50,22 @@ const populate = async (page: Page) => {
         },
         {
           ...structuredClone(source),
+          id: 'previous-year',
+          title: { fr: 'Événement hors année précédente', en: '' },
+          start: '2026-08-31',
+          end: '2026-09-01',
+          allDay: true,
+        },
+        {
+          ...structuredClone(source),
+          id: 'next-year',
+          title: { fr: 'Événement hors année suivante', en: '' },
+          start: '2027-09-01',
+          end: '2027-09-02',
+          allDay: true,
+        },
+        {
+          ...structuredClone(source),
           id: 'hidden',
           title: { fr: 'Réunion confidentielle', en: 'Confidential meeting' },
           start: '2027-04-06',
@@ -70,14 +86,17 @@ const populate = async (page: Page) => {
   await page.reload();
 };
 
-test('the school year opens with highlighted dates, expandable details and month/list navigation', async ({
+test('the current month opens by default with details and navigation limited to the current school year', async ({
   page,
 }) => {
   await boot(page);
-  await expect(page.locator('.calendar-month')).toHaveCount(12);
-  await expect(page.locator('.calendar-month').first()).toHaveAccessibleName('septembre 2026');
-  await expect(page.locator('.calendar-month').last()).toHaveAccessibleName('août 2027');
-  await expect(page.getByRole('button', { name: 'Année', exact: true })).toHaveAttribute(
+  await expect(page.locator('.calendar-month')).toHaveCount(1);
+  await expect(page.locator('.calendar-month')).toHaveAccessibleName('octobre 2026');
+  await expect(
+    page.getByRole('group', { name: 'Affichage de l’agenda' }).getByRole('button'),
+  ).toHaveCount(2);
+  await expect(page.getByRole('button', { name: /Année/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Mois', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
   );
@@ -99,7 +118,6 @@ test('the school year opens with highlighted dates, expandable details and month
   ).toBeVisible();
   await expect(page.getByLabel('Louise Martin', { exact: true })).toBeVisible();
   await page.goto('./#/calendar');
-  await page.getByRole('button', { name: 'Afficher octobre 2026', exact: true }).click();
   await expect(page.locator('.calendar-month')).toHaveCount(1);
   await expect(page.getByRole('button', { name: 'Mois', exact: true })).toHaveAttribute(
     'aria-pressed',
@@ -110,29 +128,42 @@ test('the school year opens with highlighted dates, expandable details and month
   await page.getByRole('button', { name: 'Aujourd’hui', exact: true }).click();
   await expect(page.locator('.calendar-month')).toHaveAccessibleName('octobre 2026');
   await expect(page.locator('[aria-current="date"]')).toHaveAccessibleName('mardi 6 octobre 2026');
+  await page.getByRole('button', { name: 'Mois précédent', exact: true }).click();
+  await expect(page.locator('.calendar-month')).toHaveAccessibleName('septembre 2026');
+  await expect(page.getByRole('button', { name: 'Mois précédent', exact: true })).toBeDisabled();
+  for (let i = 0; i < 11; i++)
+    await page.getByRole('button', { name: 'Mois suivant', exact: true }).click();
+  await expect(page.locator('.calendar-month')).toHaveAccessibleName('août 2027');
+  await expect(page.getByRole('button', { name: 'Mois suivant', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: 'Liste', exact: true }).click();
+  await expect(page.getByRole('button', { name: /Mois précédent|Mois suivant|Année/ })).toHaveCount(
+    0,
+  );
   await expect(
     page.getByRole('button', { name: 'Rencontre des familles', exact: true }),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Année scolaire suivante', exact: true }).click();
-  await expect(page.getByText('Aucun événement pour cette période et ces filtres.')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Exporter', exact: true })).toBeDisabled();
-  await page.getByRole('button', { name: 'Année scolaire précédente', exact: true }).click();
-  await expect(
-    page.getByRole('button', { name: 'Rencontre des familles', exact: true }),
-  ).toBeVisible();
+  await page.goto('./#/home');
+  await page.goto('./#/calendar');
+  await expect(page.locator('.calendar-month')).toHaveAccessibleName('octobre 2026');
+  await page.getByRole('button', { name: 'Liste', exact: true }).click();
+  await page.reload();
+  await expect(page.locator('.calendar-month')).toHaveAccessibleName('octobre 2026');
 });
 
-test('year highlights include summer, recurrence, shared dates and exclusive ranges with private filters and valid export', async ({
+test('month highlights and the current-year list retain summer, recurrence, ranges, privacy and valid export', async ({
   page,
 }) => {
   await boot(page);
   await populate(page);
+  for (let i = 0; i < 9; i++)
+    await page.getByRole('button', { name: 'Mois suivant', exact: true }).click();
   await page.getByRole('button', { name: /15 juillet 2027 · 1 événement/ }).click();
   await expect(
     page.getByRole('dialog').getByRole('heading', { name: 'Rencontre de fin d’année' }),
   ).toBeVisible();
   await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Aujourd’hui', exact: true }).click();
+  await page.getByRole('button', { name: 'Mois suivant', exact: true }).click();
   await page.getByRole('button', { name: /2 novembre 2026 · 2 événements/ }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('heading', { name: 'Atelier hebdomadaire' })).toBeVisible();
@@ -143,6 +174,7 @@ test('year highlights include summer, recurrence, shared dates and exclusive ran
   await expect(page.getByRole('button', { name: /3 novembre 2026 ·/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /9 novembre 2026 · 1 événement/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /16 novembre 2026 ·/ })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Mois précédent', exact: true }).click();
   await page.getByLabel('Filtrer les événements').selectOption('upcoming');
   await expect(page.getByRole('button', { name: /19 octobre 2026 ·/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /26 octobre 2026 · 1 événement/ })).toBeVisible();
@@ -153,11 +185,20 @@ test('year highlights include summer, recurrence, shared dates and exclusive ran
   await expect(dialog.getByText('Annulé', { exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
   await page.getByLabel('Filtrer les événements').selectOption('all');
+  await page.getByRole('button', { name: 'Liste', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: 'Rencontre de fin d’année', exact: true }),
+  ).toBeVisible();
+  await page.getByLabel('Rechercher dans l’agenda').fill('hors année');
+  await expect(page.getByText('Aucun événement pour cette période et ces filtres.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Exporter', exact: true })).toBeDisabled();
   await page.getByLabel('Rechercher dans l’agenda').fill('confidentielle');
-  await expect(page.locator('.month-day-event')).toHaveCount(0);
+  await expect(page.getByText('Aucun événement pour cette période et ces filtres.')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Exporter', exact: true })).toBeDisabled();
   await page.getByLabel('Rechercher dans l’agenda').fill('  hebdomadaire ');
-  await expect(page.locator('.month-day-event')).toHaveCount(4);
+  await expect(page.getByRole('button', { name: 'Atelier hebdomadaire', exact: true })).toHaveCount(
+    4,
+  );
   const downloading = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Exporter', exact: true }).click();
   const downloaded = await downloading;
@@ -174,8 +215,8 @@ test('calendar views remain responsive and accessible in French with enlarged te
   await populate(page);
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
-    for (const view of ['year', 'month', 'list']) {
-      const names = { year: 'Année', month: 'Mois', list: 'Liste' };
+    for (const view of ['month', 'list']) {
+      const names = { month: 'Mois', list: 'Liste' };
       await page
         .getByRole('button', { name: names[view as keyof typeof names], exact: true })
         .click();
@@ -192,14 +233,15 @@ test('calendar views remain responsive and accessible in French with enlarged te
         );
         expect(days.every((b) => b.width >= 24 && b.height >= 24)).toBe(true);
       }
-      if ([390, 1440].includes(width) && view !== 'list')
+      if ([390, 1440].includes(width))
         await page.screenshot({
           path: `test-results/design/calendar-${view}-${width}.png`,
           fullPage: true,
         });
     }
   }
-  await page.getByRole('button', { name: 'Année', exact: true }).click();
+  await page.getByRole('button', { name: 'Mois', exact: true }).click();
+  await page.getByRole('button', { name: 'Mois suivant', exact: true }).click();
   let scan = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
     .analyze();
@@ -218,11 +260,36 @@ test('calendar views remain responsive and accessible in French with enlarged te
   await page.evaluate(() => {
     document.documentElement.style.fontSize = '32px';
   });
-  for (const view of ['Année', 'Mois', 'Liste']) {
+  for (const view of ['Mois', 'Liste']) {
     await page.getByRole('button', { name: view, exact: true }).click();
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
       `200% ${view}`,
     ).toBe(true);
+  }
+});
+
+test('the default month follows the current Paris date across calendar and school-year boundaries', async ({
+  page,
+}) => {
+  await boot(page);
+  for (const [instant, month, boundary] of [
+    ['2026-12-31T23:30:00Z', 'janvier 2027', 'neither'],
+    ['2027-08-31T21:30:00Z', 'août 2027', 'last'],
+    ['2027-08-31T22:30:00Z', 'septembre 2027', 'first'],
+  ]) {
+    await page.clock.setFixedTime(new Date(instant));
+    await page.reload();
+    await expect(page.locator('.calendar-month')).toHaveAccessibleName(month);
+    await expect(page.getByRole('button', { name: 'Mois', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    const previous = page.getByRole('button', { name: 'Mois précédent', exact: true });
+    const next = page.getByRole('button', { name: 'Mois suivant', exact: true });
+    if (boundary === 'first') await expect(previous).toBeDisabled();
+    else await expect(previous).toBeEnabled();
+    if (boundary === 'last') await expect(next).toBeDisabled();
+    else await expect(next).toBeEnabled();
   }
 });
