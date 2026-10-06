@@ -5,7 +5,7 @@ export default defineConfig({
   workers: 3,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: 'http://127.0.0.1:4173/peyrieu-school-demo/',
+    baseURL: 'http://127.0.0.1:4173/ecole-peyrieu/',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
@@ -17,7 +17,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run preview',
-    url: 'http://127.0.0.1:4173/peyrieu-school-demo/',
+    url: 'http://127.0.0.1:4173/ecole-peyrieu/',
     reuseExistingServer: true,
   },
 });

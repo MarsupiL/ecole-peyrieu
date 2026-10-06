@@ -2,7 +2,7 @@
 
 A working French-language school PWA with fictional families, children and staff. This is an independent demonstration, not an official school service. Every visitor has a separate local dataset. No messages, school forms, medical files or reservations are transmitted to a remote service.
 
-**[Open the live demonstration](https://marsupil.github.io/peyrieu-school-demo/)** · [Source repository](https://github.com/MarsupiL/peyrieu-school-demo) · [Verified deployment](https://github.com/MarsupiL/peyrieu-school-demo/actions/runs/37425469373)
+**[Open the live demonstration](https://marsupil.github.io/ecole-peyrieu/)** · [Source repository](https://github.com/MarsupiL/ecole-peyrieu) · [Verified deployment](https://github.com/MarsupiL/ecole-peyrieu/actions/runs/37425469373)
 
 ## Run it
 
@@ -13,14 +13,16 @@ npm ci
 npm run dev
 ```
 
-Open the URL printed by Vite, including `/peyrieu-school-demo/`. For the production PWA:
+Open the URL printed by Vite, including `/ecole-peyrieu/`. For the production PWA:
 
 ```sh
 npm run build
 npm run preview
 ```
 
-Open [the local production demo](http://127.0.0.1:4173/peyrieu-school-demo/). The local server must remain running. The app is designed for the GitHub Pages project path `/peyrieu-school-demo/`; it does not assume ownership of a domain's root.
+Open [the local production demo](http://127.0.0.1:4173/ecole-peyrieu/). The local server must remain running. The app is designed for the GitHub Pages project path `/ecole-peyrieu/`; it does not assume ownership of a domain's root.
+
+The project moved from `/peyrieu-school-demo/` to `/ecole-peyrieu/`. Use the new link for bookmarks and future installations; GitHub Pages does not redirect the previous project URL. Existing browser-local data is retained on the same origin, and the app identifier remains unchanged.
 
 ## Explore the demo
 
@@ -66,7 +68,7 @@ No live backend, multi-device synchronization, email sender, remote push sender,
 
 ## Visual identity
 
-The selected logo is **Le crayon qui pousse**: a pencil with two leaves in the app’s navy, teal and soft gold. `public/logo.svg` is the full wordmark; `public/favicon.svg` is the compact source used in the header and loading screen. Run `node scripts/icons.mjs` from this directory after changing the compact SVG to regenerate the SVG/32 px PNG browser favicons, 192/512 px app icons, opaque maskable icon and 180 px Apple touch icon. HTML, the manifest and notifications use the `crayon` filenames so old icon URLs do not retain the previous identity. Legacy assets remain available for older installations. The service worker includes all icons for offline use. The manifest URL, app ID, scope and start URL remain stable; updating installed launcher icons follows each platform’s own refresh behavior.
+The selected logo is **Le crayon qui pousse**: a pencil with two leaves in the app’s navy, teal and soft gold. `public/logo.svg` is the full wordmark; `public/favicon.svg` is the compact source used in the header and loading screen. Run `node scripts/icons.mjs` from this directory after changing the compact SVG to regenerate the SVG/32 px PNG browser favicons, 192/512 px app icons, opaque maskable icon and 180 px Apple touch icon. HTML, the manifest and notifications use the `crayon` filenames so old icon URLs do not retain the previous identity. Legacy assets remain available for older installations. The service worker includes all icons for offline use. Updating installed launcher icons follows each platform’s own refresh behavior.
 
 ## Architecture
 
