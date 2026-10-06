@@ -183,7 +183,8 @@ textarea:focus-visible {
 ::selection {
   background: #bbdfe9;
 }
-.sr-only {
+.sr-only,
+.calendar-filter > label {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -865,6 +866,7 @@ textarea:focus-visible {
 }
 .event-summary {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 16px;
   flex: 1 1 18rem;
@@ -872,6 +874,8 @@ textarea:focus-visible {
 }
 .event-summary > div {
   min-width: 0;
+  flex: 1 1 12rem;
+  overflow-wrap: anywhere;
 }
 .event-summary h3 {
   margin-bottom: 6px;
@@ -1439,33 +1443,251 @@ pre {
   padding: 17px;
   margin-bottom: 15px;
 }
-.week-strip {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 8px;
-  margin-bottom: 24px;
+.calendar-controls,
+.calendar-view-actions,
+.calendar-period {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-.week-day {
-  background: white;
+.calendar-controls {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin: 28px 0 16px;
+}
+.toolbar > .calendar-filter {
+  flex: 0 1 15rem;
+  margin: 0;
+}
+.calendar-period {
+  min-width: 0;
+}
+.calendar-period h2 {
+  margin: 0;
+  min-width: 0;
+  text-align: center;
+  font-size: 1.2rem;
+  text-transform: capitalize;
+}
+.calendar-period h2 > span {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-transform: none;
+}
+.calendar-view-actions {
+  flex-wrap: wrap;
+}
+.calendar-view-switch {
+  display: flex;
+  padding: 3px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 12px 5px;
+  background: #eaf0f4;
+}
+.calendar-view-switch button {
+  border: 0;
+  background: transparent;
+  min-width: 0;
+  padding: 8px 14px;
+}
+.calendar-view-switch button[aria-pressed='true'] {
+  color: var(--navy);
+  background: white;
+  box-shadow: 0 1px 3px #153f561a;
+}
+.calendar-caption {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+}
+.calendar-caption p {
+  margin: 3px 0;
+}
+.calendar-legend {
+  display: flex;
+  gap: 10px 18px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.calendar-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.calendar-legend i {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.legend-event {
+  background: #cbe9ee;
+  border: 1px solid #13758c;
+}
+.legend-cancelled {
+  background: #fff1f1;
+  border: 1px dashed #b76666;
+}
+.legend-today {
+  border: 2px solid var(--navy);
+  background: white;
+}
+.school-calendar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 18px;
+}
+.calendar-month {
+  min-width: 0;
+  padding: 14px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.calendar-month h3 {
+  margin: 0 0 8px;
+}
+.calendar-month-title {
+  width: 100%;
+  justify-content: space-between;
+  border: 0;
+  padding: 4px 6px;
+  color: var(--navy);
+  text-transform: capitalize;
+  font-size: 1rem;
+}
+.month-table {
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 2px;
+}
+.month-table th,
+.month-table td {
+  padding: 0;
+  border: 0;
   text-align: center;
-  color: #597486;
+  vertical-align: top;
+}
+.month-table th {
+  padding: 5px 0 9px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.month-table abbr {
+  text-decoration: none;
+}
+.month-day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 3px 0 1px;
+  font-size: 0.88rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+.month-day-event {
+  color: #155569;
+  background: #e2f2f5;
+  font-weight: 700;
+}
+.month-day-event:hover {
+  background: #cbe9ee;
+  border-color: #13758c;
+}
+.month-day-marker {
+  font-size: 0.7rem;
+  line-height: 1;
+}
+.month-day-cancelled,
+.month-day-cancelled:hover {
+  background: #fff1f1;
+  color: #913c3c;
+  border: 1px dashed #b76666;
+}
+.month-day-cancelled .month-day-number,
+.month-event-cancelled {
+  text-decoration: line-through;
+}
+.month-day-today {
+  box-shadow: inset 0 0 0 2px var(--navy);
+}
+.school-calendar-month {
+  grid-template-columns: minmax(0, 1fr);
+}
+.school-calendar-month .month-day {
+  min-height: 112px;
+  padding: 7px 4px;
+  gap: 4px;
+}
+.month-event-name {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
   font-size: 0.75rem;
+  font-weight: 500;
 }
-.week-day strong {
-  display: block;
-  font-size: 1.3rem;
-  color: #254c63;
+.month-event-more {
+  font-size: 0.72rem;
 }
-.week-day.today {
-  background: #173f55;
-  color: #d9eef4;
-  border-color: #173f55;
+.calendar-event-detail + .calendar-event-detail {
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
 }
-.week-day.today strong {
-  color: #fff;
+.calendar-event-detail h3 {
+  margin: 16px 0 8px;
+}
+.calendar-event-time {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+@media (max-width: 600px) {
+  .toolbar > .calendar-filter {
+    flex: 1 1 100%;
+  }
+  .calendar-controls {
+    align-items: stretch;
+  }
+  .calendar-period {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .calendar-view-actions {
+    width: 100%;
+  }
+  .calendar-view-switch {
+    flex: 1 1 auto;
+  }
+  .calendar-view-switch button {
+    flex: 1;
+    padding-inline: 9px;
+  }
+  .calendar-month {
+    padding: 10px;
+  }
+  .school-calendar-month .month-day {
+    min-height: 62px;
+    padding-inline: 0;
+  }
+  .month-event-name,
+  .month-event-more {
+    display: none;
+  }
 }
 .small-print {
   font-size: 0.75rem;
@@ -1839,16 +2061,6 @@ pre {
   }
   .conversation-message {
     max-width: 93%;
-  }
-  .week-strip {
-    gap: 4px;
-  }
-  .week-day {
-    font-size: 0.6rem;
-    padding: 10px 3px;
-  }
-  .week-day strong {
-    font-size: 1.1rem;
   }
   .section-title h2 {
     font-size: 1.06rem;
