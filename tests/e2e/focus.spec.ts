@@ -29,6 +29,8 @@ test('pointer-selected dropdowns keep native focus without a ring and keyboard n
     await expect(select).toHaveValue(value);
     await expect(select).toBeFocused();
     expect((await outline(select)).style, `${route} pointer selection`).toBe('none');
+    // selectOption updates the native value but does not close every platform's picker.
+    await page.keyboard.press('Escape');
     await page.keyboard.press('Tab');
     await page.keyboard.press('Shift+Tab');
     await expect(select).toBeFocused();
@@ -65,12 +67,14 @@ test('label activation, touch selection and subsequent keyboard focus retain the
     await reminder.selectOption('0');
     await expect(reminder).toHaveValue('0');
     expect((await outline(reminder)).style).toBe('none');
+    await page.keyboard.press('Escape');
     await page.getByLabel('Fin du silence', { exact: true }).focus();
     await expect(reminder).not.toHaveAttribute('data-pointer-focus', 'true');
     await reminder.tap();
     await reminder.selectOption('24');
     await expect(reminder).toHaveValue('24');
     expect((await outline(reminder)).style).toBe('none');
+    await page.keyboard.press('Escape');
     await page.keyboard.press('Tab');
     await page.keyboard.press('Shift+Tab');
     await expect(reminder).toBeFocused();
