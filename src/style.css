@@ -90,6 +90,32 @@ textarea {
   background: #fff;
   color: #1c3043;
   min-height: 44px;
+  min-width: 0;
+  line-height: 1.5;
+}
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-inline-end: 2.75rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='m5 7.5 5 5 5-5' stroke='%23526777' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  background-size: 1.125rem;
+  cursor: pointer;
+  text-overflow: ellipsis;
+}
+select:disabled {
+  cursor: not-allowed;
+  background-color: #f4f7fa;
+}
+input[type='date'],
+input[type='datetime-local'],
+input[type='time'] {
+  font-variant-numeric: tabular-nums;
+}
+input::-webkit-date-and-time-value {
+  text-align: start;
+  min-height: 1.5em;
 }
 input[type='checkbox'],
 input[type='radio'] {
@@ -371,18 +397,20 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 0;
 }
 .persona-picker {
   display: flex;
   align-items: center;
   gap: 9px;
+  min-width: 0;
 }
 .persona-picker select {
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   border: 0;
-  max-width: 225px;
+  max-width: 22rem;
   padding-left: 0;
-  background: transparent;
+  background-color: transparent;
   min-width: 0;
 }
 .avatar {
@@ -463,6 +491,11 @@ textarea:focus-visible {
   justify-content: space-between;
   gap: 20px;
   margin-bottom: 27px;
+  flex-wrap: wrap;
+}
+.page-title > :first-child {
+  min-width: 0;
+  flex: 1 1 18rem;
 }
 .page-title p {
   color: #667a89;
@@ -784,6 +817,7 @@ textarea:focus-visible {
 }
 .agenda-row > span:last-child {
   flex: 1;
+  min-width: 0;
 }
 .agenda-row strong {
   display: block;
@@ -797,24 +831,50 @@ textarea:focus-visible {
   margin-top: 4px;
 }
 .calendar-date {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
   border: 1px solid #e1e8ec;
   border-radius: 9px;
   text-align: center;
-  width: 47px;
-  min-height: 54px;
-  flex-shrink: 0;
+  width: 3.5rem;
+  min-height: 4rem;
+  padding: 8px 4px;
+  flex: 0 0 3.5rem;
   background: #fbfcfd;
+  font-variant-numeric: tabular-nums;
 }
-.calendar-date small {
-  font-size: 0.6rem;
+.calendar-date > .calendar-month {
+  display: block;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #7c909d;
-  margin-top: 5px;
+  color: #526777;
+  margin: 0;
 }
-.calendar-date strong {
-  font-size: 1.3rem;
-  line-height: 1.25;
+.calendar-date > .calendar-day {
+  display: block;
+  font-size: 1.4rem;
+  line-height: 1;
+  font-weight: 650;
   color: #395a70;
+}
+.event-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+.event-summary > div {
+  min-width: 0;
+}
+.event-summary h3 {
+  margin-bottom: 6px;
 }
 .secondary {
   background: #fff;
@@ -935,10 +995,56 @@ textarea:focus-visible {
 .field textarea {
   width: 100%;
 }
+.select-control {
+  display: grid;
+  min-width: 0;
+}
+.select-control > select,
+.select-value {
+  grid-area: 1 / 1;
+}
+.select-control > select {
+  color: transparent;
+  height: 100%;
+}
+.select-control option {
+  color: #1c3043;
+  background: #fff;
+}
+.select-value {
+  align-self: center;
+  padding: 11px 2.75rem 11px 13px;
+  min-width: 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  color: #1c3043;
+}
+.select-control:has(select:disabled) .select-value {
+  color: var(--muted);
+}
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
   gap: 0 20px;
+}
+/* Shared rows keep controls aligned when one label or hint wraps. */
+@supports (grid-template-rows: subgrid) {
+  .form-grid > .field {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 3;
+    align-items: start;
+  }
+  .form-grid > .field > :nth-child(2) {
+    grid-row: 2;
+  }
+  .form-grid > .field > small {
+    grid-row: 3;
+  }
+}
+.quiet-hours-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .wide {
   grid-column: 1/-1;
@@ -965,22 +1071,33 @@ textarea:focus-visible {
   flex-wrap: wrap;
   margin-bottom: 22px;
 }
+.toolbar > select {
+  flex: 0 1 auto;
+}
 .toolbar input {
   flex: 1;
   min-width: 200px;
 }
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 23rem), 1fr));
   gap: 20px;
 }
 .grid.three {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
 }
 .detail-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(250px, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 24px;
+}
+.detail-layout > :first-child {
+  flex: 1.7 1 24rem;
+  min-width: 0;
+}
+.detail-layout > :last-child {
+  flex: 1 1 19rem;
+  min-width: 0;
 }
 .detail-body {
   white-space: pre-wrap;
@@ -1020,6 +1137,13 @@ dialog::backdrop {
 }
 .modal-head h2 {
   margin: 0;
+  min-width: 0;
+}
+.modal-head {
+  gap: 16px;
+}
+.modal-head > button {
+  flex-shrink: 0;
 }
 .modal-content {
   padding: 25px;
@@ -1094,6 +1218,7 @@ dialog::backdrop {
   border-radius: 12px;
   margin: 14px 0;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .conversation-message.mine {
   background: #e4f1f5;
@@ -1217,7 +1342,7 @@ pre {
 }
 .week-strip {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 24px;
 }
@@ -1348,9 +1473,6 @@ pre {
   .card {
     padding: 20px;
   }
-  .grid.three {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 @media (max-width: 900px) {
   .home-grid,
@@ -1359,7 +1481,7 @@ pre {
   }
   .home-grid > aside {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
     align-items: start;
   }
   .sidebar {
@@ -1379,9 +1501,6 @@ pre {
   }
   .main-content {
     padding: 25px 22px;
-  }
-  .grid.three {
-    grid-template-columns: 1fr 1fr;
   }
   .date-chip {
     display: none;
@@ -1423,25 +1542,50 @@ pre {
     padding: 10px 12px;
     min-height: 65px;
     gap: 6px;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 44px 44px;
+  }
+  .workspace-label {
+    display: block;
+    font-size: 0.8rem;
+  }
+  .workspace-label > span,
+  .workspace-label > strong {
+    display: none;
   }
   .mobile-toggle {
     display: flex;
   }
   .topbar-actions {
-    gap: 5px;
+    display: contents;
   }
   .persona-picker {
-    gap: 5px;
+    grid-row: 2;
+    grid-column: 1 / -1;
+    border: 1px solid var(--line);
+    border-radius: 8px;
   }
   .persona-picker select {
-    max-width: 195px;
-    font-size: 0.73rem;
+    max-width: none;
+    width: 100%;
+    padding-left: 12px;
+    font-size: 1rem;
+    padding-inline-end: 2.25rem;
+    background-position: right 0.65rem center;
   }
   .persona-picker .avatar {
     display: none;
   }
   .language-button {
     font-size: 0.72rem;
+    grid-column: 3;
+    grid-row: 1;
+    min-height: 44px;
+  }
+  .notification-button {
+    grid-column: 4;
+    grid-row: 1;
+    min-height: 44px;
   }
   .main-content {
     padding: 24px 16px 100px;
@@ -1586,6 +1730,13 @@ pre {
     min-width: 0;
     width: 100%;
     flex-basis: 100%;
+  }
+  .toolbar > select {
+    flex-basis: 100%;
+    width: 100%;
+  }
+  .toolbar > button {
+    flex: 1 1 auto;
   }
   .conversation-message {
     max-width: 93%;
@@ -1756,9 +1907,6 @@ pre {
 .mobile-nav button {
   font-size: 0.75rem;
 }
-.topbar select {
-  font-size: 0.875rem;
-}
 .avatar-group .avatar {
   font-size: 0.75rem;
 }
@@ -1780,9 +1928,6 @@ pre {
 }
 .demo-pill {
   font-size: 0.7rem;
-}
-.calendar-date {
-  width: 56px;
 }
 .home-grid > aside .card {
   padding: 22px;
@@ -1822,10 +1967,6 @@ pre {
   }
   .mobile-nav {
     height: 74px;
-  }
-  .persona-picker select {
-    max-width: 210px;
-    font-size: 0.8rem;
   }
   .card {
     padding: 18px;
