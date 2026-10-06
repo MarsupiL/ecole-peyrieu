@@ -1,0 +1,15 @@
+# Demonstration data provenance
+
+Verified/reviewed: **6 October 2026**.
+
+All children, guardians, staff names, class assignments, contact details, dates of birth, care instructions, messages, documents, survey answers and reservations in this app are fictional fixtures created for the demonstration. Any resemblance to an actual person is coincidental. Email fixtures use the reserved `example.invalid` domain. Monograms are generated from fictional names; there are no real staff or child photographs.
+
+The [official Peyrieu municipal school page](https://peyrieu.fr/le-groupe-scolaire/) names José Cadet in school information referring to **2022–2023**. That does not verify the current 2026–2027 roster. It was checked during implementation, but no current roster was established. No historical professional was assigned a current role in the demo. Current staff identity, classes and service responsibilities remain an external validation item for the school.
+
+The four fictional class groups are PS/MS, GS/CP, CE1/CE2 and CM1/CM2. Fictional educators Emma Laurent, Hugo Simon and Léonie Bernard and director Camille Roussel exist only to exercise the different teaching/director scopes. Nora Dubois, Sam Leroy and Alex Rivière are fictional service staff. Alice Martin, Thomas Martin, Inès Morel and Luc Petit are fictional family personas. The roster is deliberately labelled as demonstration content in the app.
+
+`public/sample-image.png` is a generated abstract demonstration image with a DEMO label. `sample-evidence.pdf` and `sample-worksheet.pdf` are generated fictional samples. They contain no medical record or signature. `sample-calendar.ics` contains only fictional public schedule items without child names. Source asset generation is in `scripts/assets.mjs`.
+
+No real family account, Mon Espace Famille session, personal school document, photo library, signature vault, or private health record was used. The real reservation portal appears solely as an external link. Capacity/cut-off rules and service responses are examples, not verified Peyrieu operating rules.
+
+Technical export handling follows the [iCalendar specification, RFC 5545](https://www.rfc-editor.org/rfc/rfc5545); responsive and semantic UI checks target relevant [WCAG 2.2](https://www.w3.org/TR/WCAG22/) criteria. These references inform implementation and do not constitute accessibility, privacy, health-data, signing or operational certification.
