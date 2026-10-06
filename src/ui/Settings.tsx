@@ -384,7 +384,7 @@ export function Settings() {
                       'Une mise à jour fictive vous attend.',
                       'A fictional update is waiting for you.',
                     ),
-                    icon: `${import.meta.env.BASE_URL}icon-192.png`,
+                    icon: `${import.meta.env.BASE_URL}icon-crayon-192.png`,
                     tag: 'peyrieu-local-test',
                   });
                   setTest(
