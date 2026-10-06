@@ -42,11 +42,11 @@ export function Calendar() {
   const [subscribe, setSubscribe] = useState(false);
   const [filter, setFilter] = useState('all');
   const [query, setQuery] = useState('');
-  const [view, setView] = useState<'year' | 'month' | 'list'>('year');
+  const [view, setView] = useState<'month' | 'list'>('month');
   const today = parisInput(new Date().toISOString()).slice(0, 10);
   const [month, setMonth] = useState(today.slice(0, 7));
   const [selectedDay, setSelectedDay] = useState<string>();
-  const year = schoolYearStart(`${month}-01`);
+  const year = schoolYearStart(today);
   const yearFrom = `${year}-09-01`;
   const yearUntil = `${year + 1}-09-01`;
   const shiftMonth = (value: string, amount: number) => {
@@ -73,8 +73,6 @@ export function Calendar() {
   const until = view === 'month' ? `${shiftMonth(month, 1)}-01` : yearUntil;
   const shown = occurrences.filter((item) => item.firstDay < until && item.lastDay >= from);
   const days = indexCalendarDays(shown, from, until);
-  const months =
-    view === 'month' ? [month] : Array.from({ length: 12 }, (_, i) => shiftMonth(`${year}-09`, i));
   const selected = selectedDay ? (days.get(selectedDay) ?? []) : [];
   const monthLabel = (value: string) =>
     new Intl.DateTimeFormat(locale, {
@@ -87,8 +85,8 @@ export function Calendar() {
       <PageTitle
         title={t('L’agenda de votre école', 'Your school calendar')}
         subtitle={t(
-          'Toute l’année scolaire, en un coup d’œil.',
-          'The whole school year at a glance.',
+          'Vos rendez-vous, mois par mois ou en liste.',
+          'Your events, month by month or in a list.',
         )}
         action={
           canAuthor(s, a, 'event', entryDefault(s, a, 'event').audience) && (
@@ -147,53 +145,44 @@ export function Calendar() {
       >
         <div className="calendar-controls">
           <div className="calendar-period">
-            <button
-              className="icon-button"
-              aria-label={
-                view === 'month'
-                  ? t('Mois précédent', 'Previous month')
-                  : t('Année scolaire précédente', 'Previous school year')
-              }
-              onClick={() => setMonth(shiftMonth(month, view === 'month' ? -1 : -12))}
-            >
-              <ChevronLeft size={20} />
-            </button>
+            {view === 'month' && (
+              <button
+                className="icon-button"
+                aria-label={t('Mois précédent', 'Previous month')}
+                disabled={month <= `${year}-09`}
+                onClick={() => setMonth(shiftMonth(month, -1))}
+              >
+                <ChevronLeft size={20} />
+              </button>
+            )}
             <h2 aria-live="polite">
-              {view === 'month' ? (
-                monthLabel(month)
-              ) : (
-                <>
-                  <span>{t('Année scolaire', 'School year')}</span>
-                  {year}–{year + 1}
-                </>
-              )}
+              {view === 'month' ? monthLabel(month) : t('Les événements', 'Events')}
             </h2>
-            <button
-              className="icon-button"
-              aria-label={
-                view === 'month'
-                  ? t('Mois suivant', 'Next month')
-                  : t('Année scolaire suivante', 'Next school year')
-              }
-              onClick={() => setMonth(shiftMonth(month, view === 'month' ? 1 : 12))}
-            >
-              <ChevronRight size={20} />
-            </button>
+            {view === 'month' && (
+              <button
+                className="icon-button"
+                aria-label={t('Mois suivant', 'Next month')}
+                disabled={month >= `${year + 1}-08`}
+                onClick={() => setMonth(shiftMonth(month, 1))}
+              >
+                <ChevronRight size={20} />
+              </button>
+            )}
           </div>
           <div className="calendar-view-actions">
-            <button onClick={() => setMonth(today.slice(0, 7))}>{t('Aujourd’hui', 'Today')}</button>
+            {view === 'month' && (
+              <button onClick={() => setMonth(today.slice(0, 7))}>
+                {t('Aujourd’hui', 'Today')}
+              </button>
+            )}
             <div
               className="calendar-view-switch"
               role="group"
               aria-label={t('Affichage de l’agenda', 'Calendar view')}
             >
-              {(['year', 'month', 'list'] as const).map((value) => (
+              {(['month', 'list'] as const).map((value) => (
                 <button key={value} aria-pressed={view === value} onClick={() => setView(value)}>
-                  {value === 'year'
-                    ? t('Année', 'Year')
-                    : value === 'month'
-                      ? t('Mois', 'Month')
-                      : t('Liste', 'List')}
+                  {value === 'month' ? t('Mois', 'Month') : t('Liste', 'List')}
                 </button>
               ))}
             </div>
@@ -207,7 +196,7 @@ export function Calendar() {
               shown.length === 1 ? 'event' : 'events',
             )}
             {' · '}
-            {view === 'month' ? monthLabel(month) : t('Septembre à août', 'September to August')}
+            {view === 'month' ? monthLabel(month) : t('Cette année scolaire', 'This school year')}
           </p>
           {view !== 'list' && (
             <p>
@@ -234,21 +223,8 @@ export function Calendar() {
                 {t('Aujourd’hui', 'Today')}
               </span>
             </div>
-            <div className={`school-calendar ${view === 'month' ? 'school-calendar-month' : ''}`}>
-              {months.map((value) => (
-                <CalendarMonth
-                  key={value}
-                  month={value}
-                  days={days}
-                  today={today}
-                  expanded={view === 'month'}
-                  onDay={setSelectedDay}
-                  onMonth={() => {
-                    setMonth(value);
-                    setView('month');
-                  }}
-                />
-              ))}
+            <div className="school-calendar">
+              <CalendarMonth month={month} days={days} today={today} onDay={setSelectedDay} />
             </div>
           </>
         )}
@@ -345,16 +321,12 @@ function CalendarMonth({
   month,
   days,
   today,
-  expanded,
   onDay,
-  onMonth,
 }: {
   month: string;
   days: Map<string, CalendarOccurrence[]>;
   today: string;
-  expanded: boolean;
   onDay: (day: string) => void;
-  onMonth: () => void;
 }) {
   const { locale, t } = useApp();
   const label = new Intl.DateTimeFormat(locale, {
@@ -365,18 +337,6 @@ function CalendarMonth({
   const longDate = new Intl.DateTimeFormat(locale, { dateStyle: 'full', timeZone: 'Europe/Paris' });
   return (
     <section className="calendar-month" aria-label={label}>
-      {!expanded && (
-        <h3>
-          <button
-            className="calendar-month-title"
-            aria-label={`${t('Afficher', 'Show')} ${label}`}
-            onClick={onMonth}
-          >
-            {label}
-            <ChevronRight size={16} />
-          </button>
-        </h3>
-      )}
       <table className="month-table" aria-label={label}>
         <thead>
           <tr>
@@ -417,17 +377,16 @@ function CalendarMonth({
                         {items.length > 1 ? items.length : '•'}
                       </span>
                     )}
-                    {expanded &&
-                      items.slice(0, 2).map((item) => (
-                        <span
-                          className={`month-event-name${item.entry.status === 'cancelled' ? ' month-event-cancelled' : ''}`}
-                          aria-hidden="true"
-                          key={`${item.entry.id}:${item.start}`}
-                        >
-                          {item.entry.title[locale] || item.entry.title.fr}
-                        </span>
-                      ))}
-                    {expanded && items.length > 2 && (
+                    {items.slice(0, 2).map((item) => (
+                      <span
+                        className={`month-event-name${item.entry.status === 'cancelled' ? ' month-event-cancelled' : ''}`}
+                        aria-hidden="true"
+                        key={`${item.entry.id}:${item.start}`}
+                      >
+                        {item.entry.title[locale] || item.entry.title.fr}
+                      </span>
+                    ))}
+                    {items.length > 2 && (
                       <span className="month-event-more" aria-hidden="true">
                         +{items.length - 2}
                       </span>
