@@ -457,13 +457,6 @@ select[data-pointer-focus='true']:focus {
   background: #dcebf7;
   color: #466f8d;
 }
-.language-button {
-  font-size: 0.75rem;
-  padding: 7px 9px;
-  min-height: 36px;
-  border: 0;
-  color: #526e7b;
-}
 .icon-button {
   border: 0;
   background: transparent;
@@ -1872,7 +1865,7 @@ pre {
     min-height: 65px;
     gap: 6px;
     display: grid;
-    grid-template-columns: 44px minmax(0, 1fr) 44px 44px;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
   }
   .workspace-label {
     display: block;
@@ -1905,14 +1898,8 @@ pre {
   .persona-picker .avatar {
     display: none;
   }
-  .language-button {
-    font-size: 0.72rem;
-    grid-column: 3;
-    grid-row: 1;
-    min-height: 44px;
-  }
   .notification-button {
-    grid-column: 4;
+    grid-column: 3;
     grid-row: 1;
     min-height: 44px;
   }

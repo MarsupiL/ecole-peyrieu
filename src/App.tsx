@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { repository } from './data/repository';
 import { type State, type Entry } from './domain/types';
-import { setPreferences, RuleError } from './domain/engine';
+import { RuleError } from './domain/engine';
 import { authorisedNotices } from './domain/policy';
 import { Context, errors, roles } from './ui/context';
 import { Home } from './ui/Home';
@@ -71,9 +71,7 @@ export default function App() {
         ref.current = v;
         setS(v);
       })
-      .catch(() =>
-        setFatal('Impossible de lire les données locales. / Local storage could not be read.'),
-      );
+      .catch(() => setFatal('Impossible de lire les données locales.'));
     const hash = () => {
       setRoute(location.hash.slice(2) || 'home');
       setMenu(false);
@@ -109,8 +107,9 @@ export default function App() {
     };
   }, []);
   const a = s?.adults.find((a) => a.id === actor) ?? s?.adults[0];
-  const locale = a?.locale ?? 'fr';
-  const t = (fr: string, en: string) => (locale === 'fr' ? fr : en);
+  // Keep existing stored translations/preferences compatible; the interface is French-only.
+  const locale = 'fr';
+  const t = (fr: string, _en: string) => fr;
   useEffect(() => {
     document.documentElement.lang = locale;
     document.title = t('École de Peyrieu · Démo', 'Peyrieu School · Demo');
@@ -166,7 +165,7 @@ export default function App() {
             location.reload();
           }}
         >
-          Réinitialiser cette démo / Reset this demo
+          Réinitialiser cette démo
         </button>
       </main>
     );
@@ -177,7 +176,7 @@ export default function App() {
           P<span>•</span>
         </span>
         <h1>Peyrieu</h1>
-        <p>Chargement de la démonstration… / Loading demo…</p>
+        <p>Chargement de la démonstration…</p>
       </main>
     );
   const notices = authorisedNotices(s, a).filter((n) => !n.read && !n.queued).length;
@@ -302,17 +301,6 @@ export default function App() {
                 </select>
               </label>
               <button
-                className="language-button"
-                aria-label={t('Switch to English', 'Passer en français')}
-                onClick={() =>
-                  void run((s) =>
-                    setPreferences(s, a.id, { locale: locale === 'fr' ? 'en' : 'fr' }),
-                  ).catch(() => {})
-                }
-              >
-                {locale === 'fr' ? 'EN' : 'FR'}
-              </button>
-              <button
                 className="notification-button icon-button"
                 aria-label={t('Notifications', 'Notifications')}
                 onClick={() => go('notifications')}
@@ -397,7 +385,7 @@ export default function App() {
       )}
       {welcome && (
         <Modal
-          title="Bienvenue · Welcome"
+          title="Bienvenue"
           onClose={() => {
             localStorage.setItem('peyrieu.welcome', 'yes');
             setWelcome(false);
@@ -407,13 +395,8 @@ export default function App() {
             Explorez une école fictive. Les changements restent dans ce navigateur. Aucun message ni
             réservation réelle. Ne saisissez aucune donnée personnelle réelle.
           </p>
-          <p>
-            Explore a fictional school. Changes stay in this browser. No real messages or bookings.
-            Please do not enter real personal information.
-          </p>
           <p className="muted">
-            Proposition indépendante, sans accord ni participation de l’école. / Independent
-            proposal; no school endorsement or participation.
+            Proposition indépendante, sans accord ni participation de l’école.
           </p>
           <button
             className="primary full"
@@ -422,7 +405,7 @@ export default function App() {
               setWelcome(false);
             }}
           >
-            Explorer la démo · Explore demo
+            Explorer la démo
           </button>
         </Modal>
       )}
