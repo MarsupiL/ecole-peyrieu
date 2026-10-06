@@ -23,6 +23,7 @@ import {
   active,
   teaches,
   director,
+  authorisedNotices,
 } from '../domain/policy';
 import {
   createConversation,
@@ -38,21 +39,42 @@ import {
 import { newEntry, tr, type Entry, type Service } from '../domain/types';
 import { Editor } from './Editor';
 export function Messages() {
-  const { s, a, t, locale } = useApp();
+  const { s, a, t, locale, go } = useApp();
   const [compose, setCompose] = useState(false);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
-  const list = visibleEntries(s, a, 'conversation').filter(
-    (e) =>
-      (filter === 'all' ||
-        (filter === 'unassigned' && !e.handler) ||
-        (filter === 'mine' && e.handler === a.id) ||
-        (filter === 'resolved' && e.status === 'resolved')) &&
-      [e.title[locale], e.body[locale], ...e.messages.map((m) => m.text)]
-        .join(' ')
-        .toLocaleLowerCase()
-        .includes(query.toLocaleLowerCase()),
+  const correspondents = (e: Entry) =>
+    [
+      ...s.adults.filter((p) => p.id !== a.id && e.participants.includes(p.id)).map((p) => p.name),
+      ...(e.team ? [t('Équipe', 'Team') + ' · ' + t(...services[e.team])] : []),
+    ].join(', ') || t('Vous', 'You');
+  const normalise = (text: string) =>
+    text.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase(locale);
+  const search = normalise(query.trim());
+  const activity = (e: Entry) => e.messages.at(-1)?.at ?? e.updated;
+  const unread = new Set(
+    authorisedNotices(s, a)
+      .filter((n) => !n.read)
+      .map((n) => n.resourceId),
   );
+  const list = visibleEntries(s, a, 'conversation')
+    .reverse()
+    .filter(
+      (e) =>
+        (filter === 'all' ||
+          (filter === 'unassigned' && !e.handler) ||
+          (filter === 'mine' && e.handler === a.id) ||
+          (filter === 'resolved' && e.status === 'resolved')) &&
+        normalise(
+          [
+            e.title[locale] || e.title.fr,
+            e.body[locale] || e.body.fr,
+            correspondents(e),
+            ...e.messages.filter((m) => !m.removed).map((m) => m.text),
+          ].join(' '),
+        ).includes(search),
+    )
+    .sort((left, right) => activity(right).localeCompare(activity(left)));
   return (
     <>
       <PageTitle
@@ -87,6 +109,83 @@ export function Messages() {
           </select>
         )}
       </div>
+      <p className="message-count" role="status">
+        {list.length}{' '}
+        {t(
+          list.length === 1 ? 'conversation' : 'conversations',
+          list.length === 1 ? 'conversation' : 'conversations',
+        )}
+        {' · '}
+        {t('Les plus récentes en premier', 'Latest activity first')}
+      </p>
+      {list.length > 0 ? (
+        <ul className="message-list" aria-label={t('Conversations', 'Conversations')}>
+          {list.map((e) => {
+            const last = e.messages.at(-1);
+            const title = e.title[locale] || e.title.fr;
+            const sender =
+              last?.author === a.id
+                ? t('Vous', 'You')
+                : s.adults.find((p) => p.id === last?.author)?.name;
+            const preview = last?.removed
+              ? t('Message modéré', 'Moderated message')
+              : last
+                ? last.text || t('Pièce jointe', 'Attachment')
+                : e.body[locale] || e.body.fr;
+            return (
+              <li key={e.id}>
+                <button
+                  className={`message-row${unread.has(e.id) ? ' message-row-unread' : ''}`}
+                  aria-label={title}
+                  aria-describedby={`message-people-${e.id} message-date-${e.id} message-status-${e.id} message-preview-${e.id}`}
+                  onClick={() => go(`conversation/${e.id}`)}
+                >
+                  <span className="message-subject" title={title}>
+                    {title}
+                  </span>
+                  <time
+                    id={`message-date-${e.id}`}
+                    className="message-date"
+                    dateTime={activity(e)}
+                    title={formatDate(activity(e), locale, true)}
+                    aria-label={formatDate(activity(e), locale, true)}
+                  >
+                    {formatDate(activity(e), locale)}
+                  </time>
+                  <span
+                    id={`message-people-${e.id}`}
+                    className="message-people"
+                    title={correspondents(e)}
+                  >
+                    {correspondents(e)}
+                  </span>
+                  <span id={`message-status-${e.id}`} className="message-status">
+                    {unread.has(e.id) && (
+                      <span className="unread-label">{t('Non lu', 'Unread')}</span>
+                    )}
+                    {e.status !== 'open' && <Badge value={e.status} />}
+                  </span>
+                  <span id={`message-preview-${e.id}`} className="message-preview">
+                    {sender && `${sender} : `}
+                    {preview}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <Empty
+          text={
+            query || filter !== 'all'
+              ? t(
+                  'Aucune conversation ne correspond à votre recherche.',
+                  'No conversations match your search.',
+                )
+              : undefined
+          }
+        />
+      )}
       <p className="notice-inline">
         <Shield size={17} />
         {t(
@@ -94,12 +193,6 @@ export function Messages() {
           'Another guardian is never added automatically. Messages stay in this browser.',
         )}
       </p>
-      <div className="grid">
-        {list.map((e) => (
-          <EntryCard key={e.id} e={e} />
-        ))}
-      </div>
-      {!list.length && <Empty />}
       {compose && <Compose onClose={() => setCompose(false)} />}
     </>
   );
@@ -129,7 +222,8 @@ export function Compose({
   const [title, setTitle] = useState(
     linked ? `${t('À propos de', 'About')} ${linked.title[locale] || linked.title.fr}` : '',
   );
-  const [text, setText] = useState(s.drafts[`${a.id}:compose:${linked?.id ?? 'new'}`] ?? '');
+  const draft = s.drafts[`${a.id}:compose:${linked?.id ?? 'new'}`];
+  const [text, setText] = useState('');
   const [reviewed, setReviewed] = useState(false);
   const [busy, setBusy] = useState(false);
   const teams = [...new Set(guardianChildren(s, a).flatMap((c) => c.services))];
@@ -201,6 +295,11 @@ export function Compose({
       <Field label={t('Objet', 'Subject')}>
         <input value={title} onChange={(ev) => setTitle(ev.target.value)} />
       </Field>
+      {draft && !text && (
+        <button className="text-button" onClick={() => setText(draft)}>
+          {t('Reprendre le texte du brouillon', 'Restore draft text')}
+        </button>
+      )}
       <Field
         label={
           summary
