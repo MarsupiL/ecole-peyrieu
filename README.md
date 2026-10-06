@@ -1,6 +1,6 @@
 # Peyrieu School · Demo
 
-A working French/English school PWA with fictional families, children and staff. This is an independent demonstration, not an official school service. Every visitor has a separate local dataset. No messages, school forms, medical files or reservations are transmitted to a remote service.
+A working French-language school PWA with fictional families, children and staff. This is an independent demonstration, not an official school service. Every visitor has a separate local dataset. No messages, school forms, medical files or reservations are transmitted to a remote service.
 
 **[Open the live demonstration](https://marsupil.github.io/peyrieu-school-demo/)** · [Source repository](https://github.com/MarsupiL/peyrieu-school-demo) · [Verified deployment](https://github.com/MarsupiL/peyrieu-school-demo/actions/runs/37425469373)
 
@@ -24,7 +24,7 @@ Open [the local production demo](http://127.0.0.1:4173/peyrieu-school-demo/). Th
 
 ## Explore the demo
 
-The persistent banner and persona selector identify this as a demonstration. French is the default; the EN/FR control remembers the language for each fictional adult. The first-run guide explains the local boundary. The in-app **Demo guide** gives eight stakeholder walkthroughs and local feedback capture.
+The persistent banner and persona selector identify this as a demonstration. The interface and authoring fields are French-only; profiles previously saved in English also open in French. The first-run guide explains the local boundary. The in-app **Guide de la démo** gives eight stakeholder walkthroughs and local feedback capture.
 
 | Persona                   | Useful walkthrough                                                                                                                                     |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -56,7 +56,7 @@ The seed includes four fictional classes, twelve children, eleven adults, shared
 
 ## Local data and boundaries
 
-IndexedDB `peyrieu-school-demo-v1` stores typed state and uploaded file blobs. Local storage keys beginning `peyrieu.` retain the active persona and onboarding choice. A schema/version check protects against accidentally reading an unsupported state. Saves are serialized; storage failures show an error. Save a draft before closing a form/editor. Language changes preserve current form values. Reset clears this app's state and uploaded files, then restores fictional fixtures; it does not clear unrelated websites.
+IndexedDB `peyrieu-school-demo-v1` stores typed state and uploaded file blobs. Local storage keys beginning `peyrieu.` retain the active persona and onboarding choice. A schema/version check protects against accidentally reading an unsupported state. Saves are serialized; storage failures show an error. Save a draft before closing a form/editor. Existing bilingual records remain compatible; stored content is preserved without a data reset. Reset clears this app's state and uploaded files, then restores fictional fixtures; it does not clear unrelated websites.
 
 **The persona switcher and browser-side policies demonstrate access rules; they are not authentication or a security boundary.** Someone controlling the browser can inspect the local database and bundled fictional records. Browser data is not an encrypted medical-record store. Use only fictional uploads. Do not enter real pupil, family, health, credential or signature data.
 
@@ -74,9 +74,9 @@ React + TypeScript + Vite; `idb` for IndexedDB, jsPDF for generated documents, L
 | `src/domain/policy.ts`                   | Central membership, audience, record, file and notification policies         |
 | `src/domain/engine.ts`                   | Validated immutable state transitions, history and audit                     |
 | `src/domain/exports.ts`, `schoolTime.ts` | Policy-checked PDF/CSV/ICS, file validation and Paris wall-time conversion   |
-| `src/data/`                              | Fictional bilingual seed, reusable templates and repository boundary         |
+| `src/data/`                              | Fictional seed, reusable templates and repository boundary                   |
 | `src/domain/adapters.ts`                 | Explicit local reservation, notification and calendar integration boundaries |
-| `src/ui/`, `src/App.tsx`                 | Role-aware workflows, language, navigation and persistence feedback          |
+| `src/ui/`, `src/App.tsx`                 | Role-aware French workflows, navigation and persistence feedback             |
 | `scripts/build-sw.mjs`                   | Content-versioned service worker, limited to the project path                |
 | `tests/`                                 | Domain rules, production browser journeys and accessibility checks           |
 
