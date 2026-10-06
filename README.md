@@ -2,6 +2,8 @@
 
 A working French/English school PWA with fictional families, children and staff. This is an independent demonstration, not an official school service. Every visitor has a separate local dataset. No messages, school forms, medical files or reservations are transmitted to a remote service.
 
+**[Open the live demonstration](https://marsupil.github.io/peyrieu-school-demo/)** · [Source repository](https://github.com/MarsupiL/peyrieu-school-demo) · [Verified deployment](https://github.com/MarsupiL/peyrieu-school-demo/actions/runs/37425469373)
+
 ## Run it
 
 Use Node.js 24 and npm. From this application directory:
