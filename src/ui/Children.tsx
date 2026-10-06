@@ -70,7 +70,7 @@ export function Children({ id }: { id?: string }) {
       </div>
       {!list.length && <Empty />}
       {a.roles.includes('guardian') && (
-        <Card className="padded">
+        <Card className="child-followup-card family-link-card">
           <h2>{t('Une erreur dans les liens familiaux ?', 'An incorrect child link?')}</h2>
           <Field
             label={t(
@@ -256,7 +256,7 @@ function ChildDetail({ c }: { c: Child }) {
         </aside>
       </div>
       {(own || teaches(s, a, c) || director(s, a)) && (
-        <Card className="padded">
+        <Card className="child-followup-card">
           <h2>
             <ShieldCheck size={20} />{' '}
             {t('Photos : un choix pour chaque usage', 'Photos: a choice for each use')}
