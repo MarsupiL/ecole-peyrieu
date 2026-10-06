@@ -51,7 +51,7 @@ test('a new production worker waits for user action and preserves a saved draft'
   const base = `http://127.0.0.1:${address.port}/peyrieu-school-demo/`;
   try {
     await page.goto(base);
-    await page.getByRole('button', { name: 'Explorer la démo · Explore demo' }).click();
+    await page.getByRole('button', { name: 'Explorer la démo' }).click();
     await page.evaluate(async () => {
       await navigator.serviceWorker.ready;
     });

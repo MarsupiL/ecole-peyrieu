@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 const boot = async (page: Page) => {
   await page.clock.setFixedTime(new Date('2026-10-06T08:00:00Z'));
   await page.goto('./');
-  const welcome = page.getByRole('button', { name: 'Explorer la démo · Explore demo' });
+  const welcome = page.getByRole('button', { name: 'Explorer la démo' });
   await welcome.click();
   await expect(page.getByRole('heading', { name: 'Bonjour Alice,' })).toBeVisible();
 };
@@ -108,13 +108,13 @@ test('poll response revisions and reviewed summaries', async ({ page }) => {
   await route(page, 'poll/survey');
   await expect(page.getByText('Un atelier lecture sera proposé.')).toBeVisible();
 });
-test('full navigation in both languages has no runtime errors', async ({ page }) => {
+test('full French navigation has no runtime errors', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await boot(page);
   for (const actor of ['alice', 'emma', 'director', 'nora', 'ines']) {
     await persona(page, actor);
-    await page.getByRole('button', { name: 'Switch to English' }).click();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
     for (const path of [
       'home',
       'news',
@@ -136,7 +136,6 @@ test('full navigation in both languages has no runtime errors', async ({ page })
       await expect(page.locator('main h1')).toBeVisible();
       await expect(page.locator('main')).not.toContainText('Loading module');
     }
-    await page.getByRole('button', { name: 'Passer en français' }).click();
   }
   expect(errors).toEqual([]);
 });
@@ -188,8 +187,8 @@ test('form editor handles conditional fields and recipient preview', async ({ pa
   await persona(page, 'emma');
   await route(page, 'forms');
   await page.getByRole('button', { name: 'Créer une démarche' }).click();
-  await page.getByLabel('Titre en français *', { exact: true }).fill('Dossier test');
-  await page.getByLabel('Titre en anglais', { exact: true }).fill('Test dossier');
+  await page.getByLabel('Titre *', { exact: true }).fill('Dossier test');
+  await expect(page.getByLabel(/anglais/i)).toHaveCount(0);
   await page.getByRole('button', { name: 'Prévisualiser' }).click();
   await expect(page.getByRole('heading', { name: 'Dossier test' })).toBeVisible();
   await page.getByRole('button', { name: 'Publier', exact: true }).click();
@@ -207,7 +206,7 @@ test('reset removes local edits, feedback and attachments', async ({ page }) => 
   await route(page, 'settings');
   await page.getByRole('button', { name: 'Réinitialiser cette démo', exact: true }).click();
   await page.getByRole('button', { name: 'Confirmer la réinitialisation' }).click();
-  await page.getByRole('button', { name: 'Explorer la démo · Explore demo' }).click();
+  await page.getByRole('button', { name: 'Explorer la démo' }).click();
   await route(page, 'help');
   await expect(page.getByRole('button', { name: 'Exporter mes retours (0)' })).toBeVisible();
 });
@@ -375,7 +374,7 @@ test('calendar RSVP, volunteer, edit, cancellation and subscription simulation',
   await route(page, 'event/meeting');
   await expect(page.getByText('Louise Martin · Oui', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Modifier', exact: true }).click();
-  await page.getByLabel('Titre en français *', { exact: true }).fill('Rencontre déplacée · test');
+  await page.getByLabel('Titre *', { exact: true }).fill('Rencontre déplacée · test');
   await page.getByRole('button', { name: 'Publier', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Rencontre déplacée · test', exact: true }),

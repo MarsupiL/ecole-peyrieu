@@ -6,7 +6,7 @@ import type { State } from '../../src/domain/types';
 const boot = async (page: Page) => {
   await page.clock.setFixedTime(new Date('2026-10-06T08:00:00Z'));
   await page.goto('./');
-  await page.getByRole('button', { name: 'Explorer la démo · Explore demo' }).click();
+  await page.getByRole('button', { name: 'Explorer la démo' }).click();
   await expect(page.getByRole('heading', { name: 'Bonjour Alice,' })).toBeVisible();
   await page.goto('./#/calendar');
 };
@@ -167,44 +167,36 @@ test('year highlights include summer, recurrence, shared dates and exclusive ran
   expect(text).not.toContain('confidentielle');
 });
 
-test('calendar views remain responsive and accessible in both languages with enlarged text', async ({
+test('calendar views remain responsive and accessible in French with enlarged text', async ({
   page,
 }) => {
   await boot(page);
   await populate(page);
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
-    for (const locale of ['en', 'fr']) {
+    for (const view of ['year', 'month', 'list']) {
+      const names = { year: 'Année', month: 'Mois', list: 'Liste' };
       await page
-        .getByRole('button', { name: locale === 'en' ? 'Switch to English' : 'Passer en français' })
+        .getByRole('button', { name: names[view as keyof typeof names], exact: true })
         .click();
-      for (const view of ['year', 'month', 'list']) {
-        const names =
-          locale === 'en'
-            ? { year: 'Year', month: 'Month', list: 'List' }
-            : { year: 'Année', month: 'Mois', list: 'Liste' };
-        await page
-          .getByRole('button', { name: names[view as keyof typeof names], exact: true })
-          .click();
-        expect(
-          await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
-          `${width}px ${locale} ${view}`,
-        ).toBe(true);
-        if (view !== 'list') {
-          const days = await page.locator('.month-day-event').evaluateAll((buttons) =>
-            buttons.map((b) => ({
-              width: b.getBoundingClientRect().width,
-              height: b.getBoundingClientRect().height,
-            })),
-          );
-          expect(days.every((b) => b.width >= 24 && b.height >= 24)).toBe(true);
-        }
-        if ([390, 1440].includes(width) && locale === 'fr' && view !== 'list')
-          await page.screenshot({
-            path: `test-results/design/calendar-${view}-${width}.png`,
-            fullPage: true,
-          });
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+        `${width}px ${view}`,
+      ).toBe(true);
+      if (view !== 'list') {
+        const days = await page.locator('.month-day-event').evaluateAll((buttons) =>
+          buttons.map((b) => ({
+            width: b.getBoundingClientRect().width,
+            height: b.getBoundingClientRect().height,
+          })),
+        );
+        expect(days.every((b) => b.width >= 24 && b.height >= 24)).toBe(true);
       }
+      if ([390, 1440].includes(width) && view !== 'list')
+        await page.screenshot({
+          path: `test-results/design/calendar-${view}-${width}.png`,
+          fullPage: true,
+        });
     }
   }
   await page.getByRole('button', { name: 'Année', exact: true }).click();

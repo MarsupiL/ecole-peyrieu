@@ -3,7 +3,7 @@ import { test, expect, type Locator, type Page } from '@playwright/test';
 const boot = async (page: Page) => {
   await page.clock.setFixedTime(new Date('2026-10-06T08:00:00Z'));
   await page.goto('./');
-  await page.getByRole('button', { name: 'Explorer la démo · Explore demo' }).click();
+  await page.getByRole('button', { name: 'Explorer la démo' }).click();
   await expect(page.getByRole('heading', { name: 'Bonjour Alice,' })).toBeVisible();
 };
 
@@ -79,10 +79,7 @@ test('label activation, touch selection and subsequent keyboard focus retain the
     await page.keyboard.press('Shift+Tab');
     await expect(reminder).toBeFocused();
     expect((await outline(reminder)).style).toBe('solid');
-    await page.getByRole('button', { name: 'Switch to English' }).click();
-    await expect(page.getByRole('combobox', { name: 'Event reminders', exact: true })).toHaveValue(
-      '24',
-    );
+    await expect(reminder).toHaveValue('24');
   } finally {
     await context.close();
   }

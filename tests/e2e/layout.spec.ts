@@ -18,7 +18,7 @@ const routes = [
 const boot = async (page: Page) => {
   await page.clock.setFixedTime(new Date('2026-10-06T08:00:00Z'));
   await page.goto('./');
-  await page.getByRole('button', { name: 'Explorer la démo · Explore demo' }).click();
+  await page.getByRole('button', { name: 'Explorer la démo' }).click();
   await expect(page.getByRole('heading', { name: 'Bonjour Alice,' })).toBeVisible();
 };
 
@@ -75,7 +75,7 @@ const layoutIssues = (page: Page) =>
   });
 
 for (const width of [320, 390, 768, 1024, 1440]) {
-  test(`all role modules fit at ${width}px in French and English`, async ({ page }) => {
+  test(`all role modules fit at ${width}px in French`, async ({ page }) => {
     test.setTimeout(120_000);
     await page.setViewportSize({ width, height: 960 });
     await boot(page);
@@ -83,18 +83,10 @@ for (const width of [320, 390, 768, 1024, 1440]) {
       await page
         .getByRole('combobox', { name: /Profil de démonstration|Demo persona/ })
         .selectOption(actor);
-      for (const locale of ['fr', 'en']) {
-        if ((await page.locator('html').getAttribute('lang')) !== locale)
-          await page
-            .getByRole('button', {
-              name: locale === 'fr' ? 'Passer en français' : 'Switch to English',
-            })
-            .click();
-        for (const route of [...routes, ...(actor === 'director' ? ['administration'] : [])]) {
-          await page.goto(`./#/${route}`);
-          await expect(page.locator('main h1')).toBeVisible();
-          expect(await layoutIssues(page), `${actor} ${locale} ${route} at ${width}px`).toEqual([]);
-        }
+      for (const route of [...routes, ...(actor === 'director' ? ['administration'] : [])]) {
+        await page.goto(`./#/${route}`);
+        await expect(page.locator('main h1')).toBeVisible();
+        expect(await layoutIssues(page), `${actor} ${route} at ${width}px`).toEqual([]);
       }
     }
   });
@@ -138,10 +130,8 @@ test('date badges use the same Paris calendar day and month near midnight', asyn
   await page.getByRole('combobox', { name: 'Profil de démonstration' }).selectOption('emma');
   await page.goto('./#/calendar');
   await page.getByRole('button', { name: 'Créer un événement', exact: true }).click();
-  await page.getByLabel('Titre en français *', { exact: true }).fill('Test du premier novembre');
-  await page
-    .getByLabel('Texte en français *', { exact: true })
-    .fill('Événement fictif après minuit à Paris.');
+  await page.getByLabel('Titre *', { exact: true }).fill('Test du premier novembre');
+  await page.getByLabel('Texte *', { exact: true }).fill('Événement fictif après minuit à Paris.');
   await page.getByLabel('Début (heure de Paris)', { exact: true }).fill('2026-11-01T00:30');
   await page.getByLabel('Fin (heure de Paris)', { exact: true }).fill('2026-11-01T01:30');
   await page.getByRole('button', { name: 'Publier', exact: true }).click();
@@ -166,7 +156,7 @@ test('key layouts reflow at 200 percent text size', async ({ page }) => {
   }
 });
 
-test('form dropdowns preserve focus, native selection and translated visible values', async ({
+test('form dropdowns preserve focus, native selection and saved visible values', async ({
   page,
 }) => {
   await boot(page);
@@ -177,8 +167,8 @@ test('form dropdowns preserve focus, native selection and translated visible val
   await reminder.selectOption('1');
   await expect(reminder).toHaveValue('1');
   await expect(reminder.locator('..').locator('.select-value')).toHaveText('1 heure avant');
-  await page.getByRole('button', { name: 'Switch to English', exact: true }).click();
-  const translated = page.getByRole('combobox', { name: 'Event reminders', exact: true });
-  await expect(translated).toHaveValue('1');
-  await expect(translated.locator('..').locator('.select-value')).toHaveText('1 hour before');
+  await expect(page.getByRole('status')).toContainText('Enregistré dans ce navigateur.');
+  await page.reload();
+  await expect(reminder).toHaveValue('1');
+  await expect(reminder.locator('..').locator('.select-value')).toHaveText('1 heure avant');
 });

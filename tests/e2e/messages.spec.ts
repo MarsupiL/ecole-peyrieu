@@ -5,7 +5,7 @@ import type { State } from '../../src/domain/types';
 const boot = async (page: Page) => {
   await page.clock.setFixedTime(new Date('2026-10-06T08:00:00Z'));
   await page.goto('./');
-  await page.getByRole('button', { name: 'Explorer la démo · Explore demo' }).click();
+  await page.getByRole('button', { name: 'Explorer la démo' }).click();
   await expect(page.getByRole('heading', { name: 'Bonjour Alice,' })).toBeVisible();
   await page.goto('./#/messages');
 };
@@ -100,9 +100,7 @@ test('conversation rows search accessible content and participants, clear unread
   await expect(rows).toHaveCount(0);
 });
 
-test('a populated inbox stays compact and accessible across widths and both languages', async ({
-  page,
-}) => {
+test('a populated inbox stays compact and accessible across widths in French', async ({ page }) => {
   await boot(page);
   // Populate this isolated test browser with accessible and inaccessible fixtures.
   await page.evaluate(async () => {
@@ -155,26 +153,20 @@ test('a populated inbox stays compact and accessible across widths and both lang
   await page.getByRole('textbox', { name: 'Rechercher dans mes messages' }).fill('');
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 960 });
-    for (const locale of ['en', 'fr']) {
-      await page
-        .getByRole('button', { name: locale === 'en' ? 'Switch to English' : 'Passer en français' })
-        .click();
-      await expect(list.getByRole('listitem')).toHaveCount(26);
-      const geometry = await list.evaluate((el) => {
-        const rows = [...el.querySelectorAll('button')].map((row) => row.getBoundingClientRect());
-        return {
-          overflow: document.documentElement.scrollWidth > innerWidth + 1,
-          maxHeight: Math.max(...rows.map((row) => row.height)),
-          aligned: rows.every(
-            (row) =>
-              Math.abs(row.left - rows[0].left) < 1 && Math.abs(row.width - rows[0].width) < 1,
-          ),
-        };
-      });
-      expect(geometry.overflow, `${width}px ${locale}`).toBe(false);
-      expect(geometry.aligned).toBe(true);
-      expect(geometry.maxHeight).toBeLessThan(160);
-    }
+    await expect(list.getByRole('listitem')).toHaveCount(26);
+    const geometry = await list.evaluate((el) => {
+      const rows = [...el.querySelectorAll('button')].map((row) => row.getBoundingClientRect());
+      return {
+        overflow: document.documentElement.scrollWidth > innerWidth + 1,
+        maxHeight: Math.max(...rows.map((row) => row.height)),
+        aligned: rows.every(
+          (row) => Math.abs(row.left - rows[0].left) < 1 && Math.abs(row.width - rows[0].width) < 1,
+        ),
+      };
+    });
+    expect(geometry.overflow, `${width}px`).toBe(false);
+    expect(geometry.aligned).toBe(true);
+    expect(geometry.maxHeight).toBeLessThan(160);
   }
   const scan = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
