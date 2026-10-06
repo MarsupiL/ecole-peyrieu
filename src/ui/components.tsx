@@ -155,8 +155,12 @@ export function Modal({
   const titleId = useId();
   useEffect(() => {
     const d = ref.current;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     d?.showModal();
-    return () => d?.close();
+    return () => {
+      d?.close();
+      if (opener?.isConnected) opener.focus();
+    };
   }, []);
   return (
     <dialog
