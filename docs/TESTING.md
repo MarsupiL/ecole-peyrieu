@@ -5,10 +5,10 @@ Date: **6 October 2026**. Build: app v1.0.0, schema 1. Test environments: macOS 
 ## Recorded results
 
 - `npm run lint`: passed; no ESLint errors.
-- `npm test`: **30 domain tests passed**.
+- `npm test`: **32 domain tests passed**.
 - TypeScript compilation and `npm run build`: passed. Vite emitted a bundle-size advisory for the eagerly loaded full UI/PDF engine; no build failure.
-- `npm run test:e2e`: **29 production browser tests passed**, including 10 design regression tests added after the initial 19-test release. Each journey has an isolated browser context. The main journeys pin the clock to 6 October 2026; the seed starts that school week.
-- Axe checks: no violations for the tested home page, annual form and form editor with WCAG 2/2.1/2.2 A/AA tags. This is bounded automated evidence, not full accessibility certification.
+- `npm run test:e2e`: **32 production browser tests passed**, including 10 design regression tests and three messaging regression journeys added after the initial 19-test release. Each journey has an isolated browser context. The main journeys pin the clock to 6 October 2026; the seed starts that school week.
+- Axe checks: no violations for the tested home page, annual form, form editor and populated inbox with WCAG 2/2.1/2.2 A/AA tags. This is bounded automated evidence, not full accessibility certification.
 - Desktop and 390-pixel mobile screenshots inspected. Tested pages have no horizontal overflow; keyboard skip link/dialog interaction and 200% text-size checks pass.
 - Generated French form-receipt PDF rendered and visually inspected: readable text, French accents, page layout and demonstration/no-signature footer. PDFs are actual downloadable documents; uploaded filenames survive submission/review.
 - ICS parsed with `ical.js`: stable UID, revision/status, exclusive all-day end date, escaped/folded UTF-8 content, correct UTC instants and weekly Paris wall time across the October daylight-saving transition.
@@ -78,6 +78,15 @@ Playwright starts/reuses the local production preview. The update test uses a se
 - Screenshots of desktop/tablet/mobile home, calendar, settings, bookings and editor layouts were visually reviewed. Local images remain in ignored `test-results/design/`; they are not deployed.
 
 Source regression coverage is in `tests/e2e/layout.spec.ts`. The original deployment links above record the first release; subsequent pushes run the expanded suite before publication.
+
+## Messaging refinement — 6 October 2026
+
+- Opening **New message** starts with an empty subject and body. A previously saved body is available through an explicit **Restore draft text** action. Contextual replies retain their reference subject; no previous body is inserted automatically.
+- Successful sends clear only that sender’s matching composition draft. Failed validation/authorisation preserves the saved draft and current input; other people’s and contextual drafts remain unchanged.
+- Conversations appear in one compact list with subject, correspondents/team, latest-message preview, Paris-local date, unread state and relevant closed/resolved status. Rows sort by latest-message timestamp, with most recently created conversations first when timestamps match.
+- Search covers accessible subjects, message text and correspondents, ignoring accents, case and surrounding spaces. Team assignment filters and policy-based visibility are preserved. The privacy explanation sits below the list so conversations remain prominent on phones.
+- Two domain regressions and three production browser journeys cover draft recovery/send/reopen, validation preservation, unread/read behavior, keyboard opening, search, excluded conversations and service assignment filters.
+- A populated 26-conversation fixture checks ordering, long subjects, alignment and overflow at 320, 390, 768 and 1440 pixels in French and English, plus 200% text and an automated accessibility scan. All three messaging journeys also passed in Firefox and WebKit (six additional local checks). Desktop and phone layouts were visually reviewed.
 
 ## Remaining checks and limitations
 
