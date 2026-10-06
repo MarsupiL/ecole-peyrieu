@@ -49,7 +49,7 @@ The seed includes four fictional classes, twelve children, eleven adults, shared
 - Evaluation drafting, review, publication, attachments, guardian-specific opened/acknowledged states and PDF report export.
 - Identified or anonymous polls, per-adult/per-child units, ownership, deadlines, result exports and reviewed summary publication.
 - Representative topics, reporting/moderation, close/reopen and summary-only escalation that does not disclose the original discussion.
-- Scoped calendar authoring, changes/cancellations, RSVP, volunteer capacity, all-day and four-week recurring events, ICS downloads, a fixed fictional public feed and simulated personal-feed revocation.
+- Calendar opens on the current Paris month, with month navigation limited to the current September–August school year and a list of that year’s events. Highlighted dates expand into event details. Scoped authoring, changes/cancellations, RSVP, volunteer capacity, all-day/four-week recurring events, ICS downloads, a fixed fictional public feed and simulated personal-feed revocation remain available.
 - Local meals/childcare/transport requests, repeat-date preview, example capacity/cut-offs, explicit simulated confirmation/cancellation and PDF receipts. The real Mon Espace Famille portal is a separate external link.
 - Invitations and simulated acceptance, verified links/statuses, class/service assignments, validated CSV preview/import, school-year rollover and scoped audit.
 - Local uploads/downloads, PDF/CSV/ICS exports, offline operation, explicit update prompt, responsive layouts, keyboard controls and local stakeholder feedback export.
