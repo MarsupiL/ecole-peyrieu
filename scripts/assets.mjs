@@ -1,7 +1,6 @@
 import sharp from 'sharp';
 import fs from 'node:fs';
-for (const size of [192, 512])
-  await sharp('public/favicon.svg').resize(size, size).png().toFile(`public/icon-${size}.png`);
+await import('./icons.mjs');
 // Safe non-identifying photo-permission test image: coloured cards with a DEMO label.
 await sharp(
   Buffer.from(
