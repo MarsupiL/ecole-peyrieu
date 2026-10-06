@@ -475,6 +475,7 @@ export function createConversation(
       messages: [{ id: uid(), author: a.id, text, at: n.clock, files: [] }],
     });
     n.entries.push(e);
+    delete n.drafts[`${a.id}:compose:${link ?? 'new'}`];
     notify(n, e, `message:${e.id}`);
   });
 }
