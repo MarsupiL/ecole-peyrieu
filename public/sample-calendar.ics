@@ -1,16 +1,17 @@
 BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Peyrieu Demo//Public fictional schedule//FR
+PRODID:-//Peyrieu Demo//Agenda public fictif//FR
 CALSCALE:GREGORIAN
-X-WR-CALNAME:Peyrieu DEMO - fixed fictional feed
+X-WR-CALNAME:Peyrieu DÉMO - agenda fictif
 BEGIN:VEVENT
 UID:public-book-day@peyrieu-school-demo.invalid
 DTSTAMP:20261006T080000Z
 SEQUENCE:0
 DTSTART;VALUE=DATE:20261015
 DTEND;VALUE=DATE:20261016
-SUMMARY:DEMO - Journée du livre / Book day
-DESCRIPTION:Fixed fictional schedule. Local browser edits do not update this feed.
+SUMMARY:DÉMO - Journée du livre
+DESCRIPTION:Agenda fictif fixe. Les modifications locales ne sont pas
+  synchronisées avec ce flux.
 STATUS:CONFIRMED
 END:VEVENT
 END:VCALENDAR
