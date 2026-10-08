@@ -2,7 +2,7 @@
 
 Generated on 8 October 2026 with the built-in image-generation tool, one image per fictional persona. No reference photographs or real identities were supplied. These invented faces illustrate the existing demo records; they are not photographs of the school community.
 
-The 19 square portraits use a pale sage background, soft daylight and simple clothing. The app serves optimized 512 × 512 WebP files from `public/portraits/`, including in its offline cache. Original PNGs are preserved separately in the private project design folder. Parents, representatives and newly created records retain initials until an eligible profile receives an upload.
+The 19 square portraits use a pale sage background, soft daylight and simple clothing. The app serves optimized 512 × 512 WebP files from `public/portraits/`, including in its offline cache. Original PNGs are preserved separately in the private project design folder. Seeded parents, representatives and newly created records start with initials. All adults can upload their own profile photo; the direction manages adult and pupil photos, and assigned teachers manage pupil photos.
 
 These static demo assets are public. Display follows the same profile scope as uploaded photos, but hiding/removing a default in the app does not delete its public fixture. Uploaded photos always take priority. A saved removal (including removals from previous releases) suppresses the default without resetting any existing data.
 

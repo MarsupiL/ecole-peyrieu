@@ -1,5 +1,11 @@
 # Implementation acceptance report
 
+## Parent profile photos — 8 October 2026
+
+Parents, representatives and adults with combined parent/staff roles can now upload, replace and remove their own portrait in Preferences. The direction can manage all adult portraits in Administration. Parent portraits are readable only by their owner and the direction, including direct-file checks. Parents still cannot edit child photos or other adults' photos. Adding a parent role no longer deletes an existing portrait. Earlier parent-photo exclusions documented below describe superseded behavior.
+
+Lint, TypeScript/build, **54 domain tests** and **50 Chromium browser journeys** pass. The two adult/parent photo journeys also pass in Firefox and WebKit (four additional checks). Coverage includes replacement, removal, reload, offline persistence, representative access, direction visibility, unauthorized adult reads/edits, suspended accounts, role changes and mobile Settings reflow/Axe at 320 pixels. Chromium/Firefox verify offline reload; WebKit retains the documented in-app offline check. No storage reset or new default parent portraits are introduced.
+
 ## Administration and profile photos — 8 October 2026
 
 Validation: lint, TypeScript/production build, **47 domain tests** and **47 Chromium browser tests** pass. The seven new administration/photo journeys also pass in Firefox and WebKit (**14 additional checks**). Photos survive fresh offline reloads in Chromium and Firefox. The local WebKit runner reports an internal error for offline reload; that branch checks online reload and offline in-app navigation instead. Physical Safari/iOS offline relaunch remains unverified. The Chromium photo journey also verifies reading the previous raw-Blob storage format.
