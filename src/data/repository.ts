@@ -1,110 +1,193 @@
-import { openDB, type IDBPDatabase } from 'idb';
+import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import type { State } from '../domain/types';
 import { seed } from './seed';
 import { upgradeClassRoster } from './classes';
 import { upgradeDemoFrench, sampleFiles, fileHash } from './french';
+import { assertStoredState, StorageError } from './stateValidation';
+
+export interface FileWrite {
+  id: string;
+  blob: Blob;
+}
+type StoredFile = { bytes: ArrayBuffer; type: string };
+interface DemoDatabase extends DBSchema {
+  state: { key: string; value: unknown };
+  files: { key: string; value: StoredFile | Blob };
+}
 export interface Repository {
   load(): Promise<State>;
-  save(s: State): Promise<void>;
-  putBlob(id: string, blob: Blob): Promise<void>;
+  save(s: State, expectedRevision: number, files?: FileWrite[]): Promise<void>;
   blob(id: string): Promise<Blob | undefined>;
-  deleteBlob(id: string): Promise<void>;
   reset(): Promise<State>;
 }
 const DB = 'peyrieu-school-demo-v1';
 export class LocalRepository implements Repository {
-  private db?: IDBPDatabase;
-  private async open() {
-    return (this.db ??= await openDB(DB, 1, {
+  private connection?: Promise<IDBPDatabase<DemoDatabase>>;
+  private loading?: Promise<State>;
+  constructor(private readonly databaseName = DB) {}
+  private open() {
+    return (this.connection ??= openDB<DemoDatabase>(this.databaseName, 1, {
       upgrade(db) {
         db.createObjectStore('state');
         db.createObjectStore('files');
       },
+      blocking: () => {
+        void this.close();
+      },
+      terminated: () => {
+        this.connection = undefined;
+      },
+    }).catch((error: unknown) => {
+      this.connection = undefined;
+      throw error;
     }));
   }
-  async load() {
-    const db = await this.open();
-    const s = (await db.get('state', 'current')) as State | undefined;
-    if (s && s.schema !== 1) throw new Error('storageVersion');
-    if (s) {
-      const updated = await this.upgradeSampleFiles(upgradeDemoFrench(upgradeClassRoster(s)));
-      if (updated !== s) await this.save(updated);
-      return updated;
-    }
-    const initial = seed();
-    await this.seedFiles(initial);
-    await this.save(initial);
-    return initial;
+  async close() {
+    const connection = this.connection;
+    this.connection = undefined;
+    (await connection)?.close();
   }
-  async save(s: State) {
-    const db = await this.open();
-    await db.put('state', s, 'current');
+  load(): Promise<State> {
+    // React StrictMode and simultaneous callers share initialization/migration work.
+    return (this.loading ??= this.read().finally(() => {
+      this.loading = undefined;
+    }));
   }
-  async putBlob(id: string, blob: Blob) {
+  private async read(): Promise<State> {
     const db = await this.open();
-    // Byte storage also works in WebKit where persisting a canvas Blob can fail.
-    await db.put('files', { bytes: await blob.arrayBuffer(), type: blob.type }, id);
-  }
-  async blob(id: string) {
-    const db = await this.open();
-    const stored = (await db.get('files', id)) as
-      Blob | { bytes: ArrayBuffer; type: string } | undefined;
-    if (!stored) return undefined;
-    // Preserve compatibility with files already saved by earlier schema-1 builds.
-    return stored instanceof Blob ? stored : new Blob([stored.bytes], { type: stored.type });
-  }
-  async deleteBlob(id: string) {
-    const db = await this.open();
-    await db.delete('files', id);
-  }
-  private async seedFiles(s: State) {
-    for (const { id, path } of sampleFiles) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const stored: unknown = await db.get('state', 'current');
+      if (stored !== undefined) assertStoredState(stored);
+      const original = stored ?? seed();
+      const s = upgradeDemoFrench(upgradeClassRoster(original));
+      const files = await this.prepareSamples(s, stored === undefined);
+      const next = files.length ? structuredClone(s) : s;
+      for (const file of files)
+        next.attachments.find((f) => f.id === file.id)!.size = file.blob.size;
+      if (stored && files.length && next.revision === stored.revision) next.revision++;
+      if (stored && next === stored) return stored;
       try {
-        const response = await fetch(`${import.meta.env.BASE_URL}${path}`);
-        if (!response.ok) continue;
-        const blob = await response.blob();
-        await this.putBlob(id, blob);
-        const f = s.attachments.find((f) => f.id === id);
-        if (f) f.size = blob.size;
-      } catch {
-        /* The UI reports a missing sample if first-load networking fails. */
+        await this.commit(next, stored?.revision, files);
+        return next;
+      } catch (error) {
+        if (!(error instanceof StorageError) || error.code !== 'storageConflict') throw error;
+        // Another tab completed initialization/migration first. Read its version.
       }
     }
+    throw new StorageError('storageConflict');
   }
-  private async upgradeSampleFiles(s: State): Promise<State> {
-    let updated = s;
-    for (const { id, path, previousHash } of sampleFiles) {
-      if (!s.attachments.some((f) => f.id === id)) continue;
-      const previous = await this.blob(id);
-      if (!previous || (await fileHash(previous)) !== previousHash) continue;
-      try {
-        const response = await fetch(`${import.meta.env.BASE_URL}${path}`);
-        if (!response.ok) continue;
-        const blob = await response.blob();
-        if (blob.type !== previous.type || (await fileHash(blob)) === previousHash) continue;
-        // Only byte-identical shipped samples are replaced, never uploaded files.
-        await this.putBlob(id, blob);
-        if (updated === s) {
-          updated = structuredClone(s);
-          updated.revision++;
-        }
-        updated.attachments.find((f) => f.id === id)!.size = blob.size;
-      } catch {
-        // An offline visitor keeps the sample; retry the upgrade on a later load.
-      }
-    }
-    return updated;
+  async save(s: State, expectedRevision: number, files: FileWrite[] = []) {
+    if (!Number.isSafeInteger(expectedRevision) || s.revision <= expectedRevision)
+      throw new StorageError('storageInvalid');
+    await this.commit(s, expectedRevision, files);
   }
-  async reset() {
+  private async commit(s: State, expectedRevision: number | undefined, files: FileWrite[]) {
+    assertStoredState(s);
+    const prepared = await this.encodeFiles(s, files);
     const db = await this.open();
     const tx = db.transaction(['state', 'files'], 'readwrite');
-    await tx.objectStore('files').clear();
-    await tx.objectStore('state').clear();
-    await tx.done;
+    try {
+      const current: unknown = await tx.objectStore('state').get('current');
+      if (current !== undefined) assertStoredState(current);
+      if (current?.revision !== expectedRevision) throw new StorageError('storageConflict');
+      if (current) {
+        for (const f of s.attachments)
+          if (
+            !current.attachments.some((old) => old.id === f.id) &&
+            !prepared.some((upload) => upload.id === f.id) &&
+            !(await tx.objectStore('files').get(f.id))
+          )
+            throw new StorageError('storageInvalid');
+      }
+      // State, file bytes and removal of replaced portraits commit or abort together.
+      for (const f of current?.attachments ?? [])
+        if (!s.attachments.some((next) => next.id === f.id))
+          await tx.objectStore('files').delete(f.id);
+      for (const { id, file } of prepared) await tx.objectStore('files').put(file, id);
+      await tx.objectStore('state').put(s, 'current');
+      await tx.done;
+    } catch (error) {
+      try {
+        tx.abort();
+      } catch {
+        /* The transaction may already have aborted. */
+      }
+      await tx.done.catch(() => {});
+      throw error;
+    }
+  }
+  private async encodeFiles(s: State, files: FileWrite[]) {
+    if (new Set(files.map((f) => f.id)).size !== files.length)
+      throw new StorageError('storageInvalid');
+    return Promise.all(
+      files.map(async ({ id, blob }) => {
+        const metadata = s.attachments.find((f) => f.id === id);
+        if (!metadata || metadata.size !== blob.size || metadata.type !== blob.type)
+          throw new StorageError('storageInvalid');
+        return { id, file: { bytes: await blob.arrayBuffer(), type: blob.type } };
+      }),
+    );
+  }
+  async blob(id: string): Promise<Blob | undefined> {
+    const db = await this.open();
+    const stored = await db.get('files', id);
+    if (!stored) return undefined;
+    // Preserve raw Blobs from older builds and byte storage required by WebKit.
+    return stored instanceof Blob ? stored : new Blob([stored.bytes], { type: stored.type });
+  }
+  private async prepareSamples(s: State, initial: boolean): Promise<FileWrite[]> {
+    const files: FileWrite[] = [];
+    for (const { id, path, previousHash } of sampleFiles) {
+      const metadata = s.attachments.find((f) => f.id === id);
+      if (!metadata) continue;
+      const previous = initial ? undefined : await this.blob(id);
+      if (previous && (await fileHash(previous)) !== previousHash) continue;
+      try {
+        const response = await fetch(`${import.meta.env.BASE_URL}${path}`);
+        if (!response.ok) continue;
+        const blob = await response.blob();
+        if (blob.type !== metadata.type || !blob.size) continue;
+        if (previous && (await fileHash(blob)) === previousHash) continue;
+        files.push({ id, blob });
+      } catch {
+        // First-load/offline failures retain data; missing samples retry on next load.
+      }
+    }
+    return files;
+  }
+  async reset(): Promise<State> {
     const s = seed();
-    await this.seedFiles(s);
-    await this.save(s);
-    return s;
+    const files = await this.prepareSamples(s, true);
+    for (const f of files) s.attachments.find((a) => a.id === f.id)!.size = f.blob.size;
+    const prepared = await this.encodeFiles(s, files);
+    assertStoredState(s);
+    const db = await this.open();
+    const tx = db.transaction(['state', 'files'], 'readwrite');
+    try {
+      const previous = await tx.objectStore('state').get('current');
+      // Keep revisions monotonic so an old tab cannot resurrect pre-reset records.
+      if (
+        previous &&
+        typeof previous === 'object' &&
+        'revision' in previous &&
+        typeof previous.revision === 'number' &&
+        Number.isSafeInteger(previous.revision)
+      )
+        s.revision = Math.max(0, previous.revision) + 1;
+      await tx.objectStore('files').clear();
+      for (const { id, file } of prepared) await tx.objectStore('files').put(file, id);
+      await tx.objectStore('state').put(s, 'current');
+      await tx.done;
+      return s;
+    } catch (error) {
+      try {
+        tx.abort();
+      } catch {
+        /* Already aborted. */
+      }
+      await tx.done.catch(() => {});
+      throw error;
+    }
   }
 }
-export const repository = new LocalRepository();
+export const repository: Repository = new LocalRepository();
