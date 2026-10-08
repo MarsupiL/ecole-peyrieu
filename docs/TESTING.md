@@ -139,6 +139,14 @@ Source regression coverage is in `tests/e2e/layout.spec.ts`. The original deploy
 - The two-version update journey also checks that a legacy-path offline cache is preserved while the current-path cache updates and the saved draft survives.
 - A separate local migration check served the previous and new production builds on the same origin, saved a draft through the old URL, then reopened it at the new URL. It verified the retained draft, unchanged app identifier, new manifest start/scope, both cached versions loading offline and no page errors. Physical installed-app shortcut migration remains unverified.
 
+## Fictional profile portraits — 8 October 2026
+
+- Added 19 independently generated portraits: twelve pupils and seven non-parent staff, optimized to 512 × 512 WebP (289 KiB total). The originals are preserved privately; public generation prompts and asset provenance are in `PROFILE_PORTRAITS.md`.
+- Existing datasets receive defaults without a reset. Uploaded photos take priority; explicit removals remain removed, including removals saved by earlier releases. New records and all parent accounts retain initials. Display uses current profile scope; these fictional static assets are public fixtures, not private uploads.
+- All 51 domain checks pass. Four new checks cover the seeded roster, viewer scope, mixed parent/staff roles, preservation of uploads, remembered default removal and compatibility with historical removal audit records.
+- The new browser journey decodes all 19 portraits, verifies parent exclusion, offline display, and pupil/staff default removal after reload. Existing upload journeys now explicitly await a blob URL so a visible default cannot mask an incomplete upload.
+- All 48 Chromium journeys pass across the complete run and the corrected save-wait rerun. Eight administration/photo journeys also pass in Firefox and WebKit (16 additional checks), including Axe and reflow at 320 and 1440 pixels. Chromium and Firefox cover fresh offline reload; the WebKit runner covers offline in-app use because of its previously observed offline-reload limitation. Physical mobile installation remains unverified.
+
 ## Remaining checks and limitations
 
 - The public static demo is deployed. The live site is not a school production service; server authentication, private storage and real integrations remain outside its scope.
