@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { seed } from '../src/data/seed';
 import { demoPortrait } from '../src/data/portraits';
+import { upgradeClassRoster } from '../src/data/classes';
 import type { State, ProfileTarget } from '../src/domain/types';
 import {
   createChild,
@@ -34,6 +35,48 @@ const target: ProfileTarget = { kind: 'child', id: 'c1' };
 const photo = { id: 'portrait-test', name: 'portrait.png', type: 'image/png', size: 1000 };
 
 describe('school administration boundaries and record preservation', () => {
+  it('upgrades older class groups once without changing pupils, staff, files or saved work', () => {
+    const s = setup();
+    s.seedVersion = 1;
+    s.classes = s.classes.filter((g) => g.id !== 'ce2cm1');
+    s.classes.find((g) => g.id === 'ps')!.name = 'PS / MS';
+    s.classes.find((g) => g.id === 'cp')!.name = 'GS / CP';
+    s.drafts['alice:message'] = 'Brouillon conservé';
+    child(s, 'c1').demoPhotoHidden = true;
+    const before = structuredClone(s);
+    const n = upgradeClassRoster(s);
+    expect(n.classes.map((g) => g.name)).toEqual([
+      'PS / MS / GS',
+      'CP / CE1',
+      'CE1 / CE2',
+      'CE2 / CM1',
+      'CM1 / CM2',
+    ]);
+    expect({ ...n, classes: s.classes, seedVersion: 1, revision: s.revision }).toEqual(s);
+    expect(s).toEqual(before);
+    expect(upgradeClassRoster(n)).toBe(n);
+    n.classes = n.classes.filter((g) => g.id !== 'ce2cm1');
+    expect(upgradeClassRoster(n).classes).toHaveLength(4);
+  });
+  it('preserves custom and archived groups and reuses an existing CE2/CM1 group', () => {
+    const s = setup();
+    s.seedVersion = 1;
+    s.classes.find((g) => g.id === 'ps')!.name = 'Maternelle personnalisée';
+    s.classes.find((g) => g.id === 'cp')!.archived = true;
+    const existing = s.classes.find((g) => g.id === 'ce2cm1')!;
+    existing.id = 'existing-group';
+    existing.name = 'CE2/CM1';
+    const n = upgradeClassRoster(s);
+    expect(n.classes).toEqual(s.classes);
+    expect(n.classes).toHaveLength(5);
+    existing.archived = true;
+    existing.id = 'ce2cm1';
+    const withArchive = upgradeClassRoster(s);
+    expect(withArchive.classes.filter((g) => g.name.replace(/\s/g, '') === 'CE2/CM1')).toHaveLength(
+      2,
+    );
+    expect(new Set(withArchive.classes.map((g) => g.id)).size).toBe(withArchive.classes.length);
+  });
   it('creates blank pupil records within teaching scope and validates actual birth dates', () => {
     const s = setup();
     const n = createChild(s, 'emma', input);
