@@ -239,7 +239,7 @@ export interface Audit {
 }
 export interface State {
   schema: 1;
-  seedVersion: 1;
+  seedVersion: 1 | 2;
   revision: number;
   clock: string;
   year: string;
