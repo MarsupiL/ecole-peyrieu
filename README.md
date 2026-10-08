@@ -51,6 +51,8 @@ For a pupil photo, open **Enfants et classes → Modifier**, or the pupil's prof
 
 Photos accept JPEG, PNG or WebP up to 5 MB. The app validates and decodes them, crops the centre to a square, and re-encodes a portrait up to 512 pixels without source metadata. Changes save immediately to this browser's IndexedDB and work offline after initial installation. Replace/remove controls use current profile permissions, including direct-file checks. Profile photos are separate from publication consent and grant no permission to publish a child’s image.
 
+The twelve seeded pupils and seven staff members have [fictional AI-generated default portraits](docs/PROFILE_PORTRAITS.md). These public demo fixtures work offline and appear for existing datasets without a reset. Uploaded photos take priority, and removed photos stay removed after reloading. Parents retain initials. Removing a generated portrait changes this browser's profile preference; its public fixture remains in the static demo bundle.
+
 The **Droits et recommandations** tab explains current permissions and suggests temporary staff assignments, verified invitations/MFA, additional validation for sensitive family-link changes and an agreed retention policy for a future real service. These production recommendations remain outside the local fictional demo.
 
 ## Functional scope
