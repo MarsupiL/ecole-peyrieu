@@ -20,6 +20,81 @@ const noOverflow = async (page: Page) =>
     true,
   );
 
+test('older stored classes update without resetting photos, pupils, permissions or drafts', async ({
+  page,
+}) => {
+  await boot(page);
+  await pupils(page);
+  await row(page, 'Louise Martin').getByRole('button', { name: 'Modifier', exact: true }).click();
+  await page
+    .getByLabel('Photo de profil', { exact: true })
+    .setInputFiles('public/sample-image.png');
+  await expect(
+    page.getByRole('dialog').getByRole('img', { name: 'Photo de Louise Martin' }),
+  ).toHaveAttribute('src', /^blob:/);
+  await page.keyboard.press('Escape');
+  const before = await page.evaluate(async () => {
+    const request = indexedDB.open('peyrieu-school-demo-v1');
+    const db = await new Promise<IDBDatabase>((resolve) => {
+      request.onsuccess = () => resolve(request.result);
+    });
+    const tx = db.transaction('state', 'readwrite');
+    const store = tx.objectStore('state');
+    const get = store.get('current');
+    const s = await new Promise<import('../../src/domain/types').State>((resolve) => {
+      get.onsuccess = () => resolve(get.result);
+    });
+    s.seedVersion = 1;
+    s.classes = s.classes.filter((g) => g.id !== 'ce2cm1');
+    s.classes.find((g) => g.id === 'ps')!.name = 'PS / MS';
+    s.classes.find((g) => g.id === 'cp')!.name = 'GS / CP';
+    s.drafts['alice:message'] = 'À conserver après mise à jour des classes';
+    store.put(s, 'current');
+    await new Promise<void>((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+    return s;
+  });
+  await page.reload();
+  await pupils(page);
+  await expect(page.getByLabel('Filtrer par classe').locator('option')).toHaveText([
+    'Toutes mes classes',
+    'PS / MS / GS',
+    'CP / CE1',
+    'CE1 / CE2',
+    'CE2 / CM1',
+    'CM1 / CM2',
+  ]);
+  await expect(
+    row(page, 'Louise Martin').getByRole('img', { name: 'Photo de Louise Martin' }),
+  ).toHaveAttribute('src', /^blob:/);
+  const after = await page.evaluate(async () => {
+    const request = indexedDB.open('peyrieu-school-demo-v1');
+    const db = await new Promise<IDBDatabase>((resolve) => {
+      request.onsuccess = () => resolve(request.result);
+    });
+    const get = db.transaction('state').objectStore('state').get('current');
+    const s = await new Promise<import('../../src/domain/types').State>((resolve) => {
+      get.onsuccess = () => resolve(get.result);
+    });
+    db.close();
+    return s;
+  });
+  expect(after.seedVersion).toBe(2);
+  expect(after.revision).toBe(before.revision + 1);
+  expect({
+    ...after,
+    classes: before.classes,
+    seedVersion: before.seedVersion,
+    revision: before.revision,
+  }).toEqual(before);
+  await page.reload();
+  await pupils(page);
+  await expect(page.getByLabel('Filtrer par classe').locator('option')).toHaveCount(6);
+});
+
 test('teacher adds a blank pupil, transfers the same record and loses source-class access', async ({
   page,
 }) => {
