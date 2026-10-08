@@ -39,7 +39,7 @@ The persistent banner and persona selector identify this as a demonstration. The
 | Inès Morel                | Class representative; parent-only topics and polls, moderated discussion, explicitly reviewed summaries to staff                                       |
 | Luc Petit                 | An unrelated-class guardian for access-denial checks                                                                                                   |
 
-The seed includes four fictional classes, twelve children, eleven adults, shared-class teachers, siblings, conflicting photo permissions, sample documents, drafts/published reports, forms, polls, events, messages and bookings. Dates start in the week of first use. **Preferences → Demo clock** advances local simulated time to exercise deadlines, quiet hours, reminders and scheduled publication. Reset creates a fresh dataset for the current week.
+The seed includes five class groups (PS/MS/GS, CP/CE1, CE1/CE2, CE2/CM1 and CM1/CM2), twelve children, eleven adults, shared-class teachers, siblings, conflicting photo permissions, sample documents, drafts/published reports, forms, polls, events, messages and bookings. Dates start in the week of first use. **Preferences → Demo clock** advances local simulated time to exercise deadlines, quiet hours, reminders and scheduled publication. Reset creates a fresh dataset for the current week. Earlier demo datasets receive the updated class names and the additional CE2/CM1 group automatically, preserving pupil records, photos and existing assignments. The new group starts empty so the direction can assign its pupils and teachers.
 
 ## Administration and profile photos
 
