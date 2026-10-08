@@ -83,7 +83,10 @@ for (const width of [320, 390, 768, 1024, 1440]) {
       await page
         .getByRole('combobox', { name: /Profil de démonstration|Demo persona/ })
         .selectOption(actor);
-      for (const route of [...routes, ...(actor === 'director' ? ['administration'] : [])]) {
+      for (const route of [
+        ...routes,
+        ...(['director', 'emma'].includes(actor) ? ['administration'] : []),
+      ]) {
         await page.goto(`./#/${route}`);
         await expect(page.locator('main h1')).toBeVisible();
         expect(await layoutIssues(page), `${actor} ${route} at ${width}px`).toEqual([]);

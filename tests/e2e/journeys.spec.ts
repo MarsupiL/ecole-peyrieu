@@ -355,6 +355,7 @@ test('preference controls retain selected values and class reassignment takes ef
   await route(page, 'administration');
   await page.getByRole('button', { name: 'Enfants et classes', exact: true }).click();
   await page.getByLabel('Classe de Louise Martin', { exact: true }).selectOption('cm');
+  await page.getByRole('button', { name: 'Confirmer le transfert', exact: true }).click();
   await expect(page.getByLabel('Classe de Louise Martin', { exact: true })).toHaveValue('cm');
   await persona(page, 'alice');
   await route(page, 'post/welcome');
