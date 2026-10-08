@@ -41,6 +41,18 @@ The persistent banner and persona selector identify this as a demonstration. The
 
 The seed includes four fictional classes, twelve children, eleven adults, shared-class teachers, siblings, conflicting photo permissions, sample documents, drafts/published reports, forms, polls, events, messages and bookings. Dates start in the week of first use. **Preferences → Demo clock** advances local simulated time to exercise deadlines, quiet hours, reminders and scheduled publication. Reset creates a fresh dataset for the current week.
 
+## Administration and profile photos
+
+Open **Administration** as the direction or a teacher. The direction can invite, edit, suspend or revoke adult accounts; maintain pupil identity, verified parent links, class and service enrolment; archive school departures and restore the same records. Teachers can create/edit pupils in their assigned classes, transfer those pupils to another current class, or remove them from their class for direction reassignment. Removing an adult revokes access; removing a pupil from a class does not delete their school record. Transfers keep the pupil ID, parent links, documents, evaluations and response history.
+
+The **Parents délégués** tab assigns or removes a verified parent's mandate per class, with a separate expiry date for each class. Teachers are restricted to their own classes. Losing a mandate preserves normal parent access; transferring the last linked child out of a class ends that class's mandate.
+
+For a pupil photo, open **Enfants et classes → Modifier**, or the pupil's profile as the direction/assigned teacher. For a staff photo, the direction uses **Adultes et accès → Gérer**; staff can also change their own photo in **Préférences**. Parent accounts, including representatives and accounts combining a parent and staff role, retain initials. New pupil records must be saved before adding a photo.
+
+Photos accept JPEG, PNG or WebP up to 5 MB. The app validates and decodes them, crops the centre to a square, and re-encodes a portrait up to 512 pixels without source metadata. Changes save immediately to this browser's IndexedDB and work offline after initial installation. Replace/remove controls use current profile permissions, including direct-file checks. Profile photos are separate from publication consent and grant no permission to publish a child’s image.
+
+The **Droits et recommandations** tab explains current permissions and suggests temporary staff assignments, verified invitations/MFA, additional validation for sensitive family-link changes and an agreed retention policy for a future real service. These production recommendations remain outside the local fictional demo.
+
 ## Functional scope
 
 - Child-filtered home, scoped lists/search/direct routes, tasks and notifications.
