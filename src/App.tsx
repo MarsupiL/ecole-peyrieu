@@ -22,7 +22,7 @@ import { repository } from './data/repository';
 import { type State, type Entry } from './domain/types';
 import { RuleError } from './domain/engine';
 import { authorisedNotices, canAdministrate } from './domain/policy';
-import { Context, errors, roles } from './ui/context';
+import { Context, errors, roles, statusNames } from './ui/context';
 import { Home } from './ui/Home';
 import { Forms } from './ui/Forms';
 import { Children, Denied } from './ui/Children';
@@ -303,7 +303,7 @@ export default function App() {
                   {s.adults.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name} · {t(...roles[p.roles.at(-1)!])}
-                      {p.status !== 'active' ? ` (${p.status})` : ''}
+                      {p.status !== 'active' ? ` (${t(...statusNames[p.status])})` : ''}
                     </option>
                   ))}
                 </select>

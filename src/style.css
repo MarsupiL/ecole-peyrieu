@@ -108,6 +108,74 @@ select:disabled {
   cursor: not-allowed;
   background-color: #f4f7fa;
 }
+select option {
+  padding: 10px 12px;
+  line-height: 1.5;
+}
+/* Style the native picker where supported; other browsers keep their OS menu. */
+@supports (appearance: base-select) {
+  select:not([multiple]):not([size]),
+  select:not([multiple]):not([size])::picker(select) {
+    appearance: base-select;
+  }
+  select:not([multiple]):not([size])::picker-icon {
+    display: none;
+  }
+  select:not([multiple]):not([size])::picker(select) {
+    font: inherit;
+    color: #1c3043;
+    background: #fff;
+    border: 1px solid #d3dfe6;
+    border-radius: 12px;
+    box-shadow:
+      0 12px 32px #153f5624,
+      0 2px 6px #153f5610;
+    padding: 6px;
+    margin-block: 6px;
+    min-inline-size: anchor-size(inline);
+    max-inline-size: min(32rem, calc(100vw - 24px));
+    max-block-size: min(26rem, 60dvh);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  select:not([multiple]):not([size]) option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-block-size: 44px;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 7px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    color: #1c3043;
+    background: transparent;
+    cursor: pointer;
+  }
+  select:not([multiple]):not([size]) option:checked {
+    background: #e8f3f6;
+    color: var(--navy);
+    font-weight: 600;
+  }
+  select:not([multiple]):not([size]) option:not(:disabled):hover {
+    background: #f0f6f8;
+  }
+  select:not([multiple]):not([size]) option:focus-visible {
+    background: #e8f3f6;
+    outline: 2px solid var(--blue);
+    outline-offset: -2px;
+  }
+  select:not([multiple]):not([size]) option:disabled {
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+  select:not([multiple]):not([size]) option::checkmark {
+    order: 1;
+    margin-inline-start: auto;
+    flex-shrink: 0;
+    color: var(--blue);
+  }
+}
 input[type='date'],
 input[type='datetime-local'],
 input[type='time'] {
@@ -391,11 +459,16 @@ select[data-pointer-focus='true']:focus {
 }
 .persona-picker select {
   font-size: 0.875rem;
-  border: 0;
+  border: 1px solid var(--line);
   max-width: 22rem;
-  padding-left: 0;
-  background-color: transparent;
+  padding-inline-start: 12px;
+  background-color: #f8fafb;
   min-width: 0;
+}
+.persona-picker select:hover,
+.persona-picker select:open {
+  background-color: #f0f6f8;
+  border-color: #b4c8d1;
 }
 .avatar {
   width: 38px;
@@ -1321,6 +1394,9 @@ dialog::backdrop {
   overflow: auto;
   max-width: 100%;
 }
+.table-wrap select {
+  min-width: max-content;
+}
 table {
   width: 100%;
   border-collapse: collapse;
@@ -1846,6 +1922,7 @@ pre {
   .persona-picker select {
     max-width: none;
     width: 100%;
+    border: 0;
     padding-left: 12px;
     font-size: 1rem;
     padding-inline-end: 2.25rem;
@@ -2294,7 +2371,7 @@ small {
   vertical-align: top;
 }
 .admin-table select {
-  min-width: 110px;
+  min-width: max-content;
 }
 .admin-checks {
   margin: 0 0 20px;
