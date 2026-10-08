@@ -11,6 +11,16 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'firefox',
+      testMatch: ['storage.spec.ts', 'french.spec.ts'],
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit',
+      testMatch: ['storage.spec.ts', 'french.spec.ts'],
+      use: { ...devices['Desktop Safari'] },
+    },
+    {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 1000 } },
     },
@@ -18,6 +28,6 @@ export default defineConfig({
   webServer: {
     command: 'npm run preview',
     url: 'http://127.0.0.1:4173/ecole-peyrieu/',
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
   },
 });

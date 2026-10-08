@@ -10,30 +10,44 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "lint": "eslint .",
-    "check": "npm run lint && npm test && npm run build"
+    "check": "npm run lint && npm run lint:unused && npm run typecheck && npm run test:coverage && npm run build",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc -p tsconfig.tests.json --noEmit",
+    "lint:unused": "knip",
+    "format": "prettier --write .",
+    "assets:generate": "node scripts/assets.mjs",
+    "icons:generate": "node scripts/icons.mjs"
   },
   "dependencies": {
     "idb": "8.0.3",
     "jspdf": "4.2.1",
     "lucide-react": "1.52.0",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.63.0",
+    "@types/node": "24.19.1",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.1.2",
+    "@vitest/coverage-v8": "5.0.3",
     "eslint": "10.12.0",
     "eslint-plugin-unused-imports": "4.4.1",
+    "fake-indexeddb": "6.2.5",
     "ical.js": "2.2.1",
+    "knip": "6.40.0",
     "prettier": "3.9.9",
     "sharp": "0.35.5",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.1",
     "vite": "8.3.3",
     "vitest": "5.0.3"
+  },
+  "engines": {
+    "node": ">=24 <25"
   }
 }
