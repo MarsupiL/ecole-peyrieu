@@ -119,7 +119,7 @@ test('pupil photos persist offline, follow profile access, reject invalid files 
   await upload.setInputFiles('public/sample-image.png');
   await expect(
     page.getByRole('dialog').getByRole('img', { name: 'Photo de Louise Martin' }),
-  ).toBeVisible();
+  ).toHaveAttribute('src', /^blob:/);
   await page.keyboard.press('Escape');
   await expect(
     row(page, 'Louise Martin').getByRole('img', { name: 'Photo de Louise Martin' }),
@@ -197,7 +197,7 @@ test('direction manages staff photos; staff can change their own; parents have n
     .setInputFiles('public/sample-image.png');
   await expect(
     page.getByRole('dialog').getByRole('img', { name: 'Photo de Emma Laurent' }),
-  ).toBeVisible();
+  ).toHaveAttribute('src', /^blob:/);
   await page.keyboard.press('Escape');
   await row(page, 'Alice Martin').getByRole('button', { name: 'Gérer', exact: true }).click();
   await expect(page.getByLabel('Photo de profil', { exact: true })).toHaveCount(0);
@@ -216,10 +216,64 @@ test('direction manages staff photos; staff can change their own; parents have n
     .setInputFiles('public/sample-image.png');
   await expect(
     page.locator('.persona-picker').getByRole('img', { name: 'Photo de Nora Dubois' }),
-  ).toBeVisible();
+  ).toHaveAttribute('src', /^blob:/);
   await persona(page, 'alice');
   await page.goto('./#/settings');
   await expect(page.getByLabel('Photo de profil', { exact: true })).toHaveCount(0);
+});
+
+test('fictional defaults load for all pupils and staff, work offline and stay removed after reload', async ({
+  page,
+  context,
+  browserName,
+}) => {
+  await boot(page);
+  const portraits = page.locator('.admin-table img');
+  await expect(portraits).toHaveCount(7);
+  await expect(row(page, 'Alice Martin').locator('img')).toHaveCount(0);
+  const decoded = () =>
+    portraits.evaluateAll(async (images) => {
+      await Promise.all(images.map((image) => (image as HTMLImageElement).decode()));
+      return images.every((image) => (image as HTMLImageElement).naturalWidth === 512);
+    });
+  expect(await decoded()).toBe(true);
+  await pupils(page);
+  await expect(portraits).toHaveCount(12);
+  expect(await decoded()).toBe(true);
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+    if (!navigator.serviceWorker.controller)
+      await new Promise<void>((resolve) =>
+        navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), {
+          once: true,
+        }),
+      );
+  });
+  await context.setOffline(true);
+  if (browserName !== 'webkit') {
+    await page.reload();
+    await pupils(page);
+  }
+  expect(await decoded()).toBe(true);
+  await row(page, 'Louise Martin').getByRole('button', { name: 'Modifier', exact: true }).click();
+  await expect(page.getByText('Portrait fictif généré par IA pour la démo.')).toBeVisible();
+  await page.getByRole('button', { name: 'Retirer la photo', exact: true }).click();
+  await expect(page.getByRole('img', { name: 'Photo de Louise Martin' })).toHaveCount(0);
+  await context.setOffline(false);
+  await page.reload();
+  await pupils(page);
+  await expect(row(page, 'Louise Martin').locator('img')).toHaveCount(0);
+  await expect(portraits).toHaveCount(11);
+  await persona(page, 'nora');
+  await page.goto('./#/settings');
+  await expect(page.locator('.persona-picker img')).toHaveAttribute(
+    'src',
+    /portraits\/nora\.webp$/,
+  );
+  await page.getByRole('button', { name: 'Retirer la photo', exact: true }).click();
+  await expect(page.getByRole('img', { name: 'Photo de Nora Dubois' })).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole('img', { name: 'Photo de Nora Dubois' })).toHaveCount(0);
 });
 
 for (const width of [320, 1440])
