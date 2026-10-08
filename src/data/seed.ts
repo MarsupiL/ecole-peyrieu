@@ -8,6 +8,7 @@ import {
   type PhotoUse,
   type Service,
 } from '../domain/types';
+import { schoolClasses } from './classes';
 export function seed(at = new Date().toISOString()): State {
   const date = new Date(at);
   date.setUTCDate(date.getUTCDate() - ((date.getUTCDay() + 6) % 7));
@@ -550,18 +551,13 @@ export function seed(at = new Date().toISOString()): State {
   );
   const s: State = {
     schema: 1,
-    seedVersion: 1,
+    seedVersion: 2,
     revision: 0,
     clock: now,
     year,
     adults,
     children,
-    classes: [
-      { id: 'ps', name: 'PS / MS', year, archived: false },
-      { id: 'cp', name: 'GS / CP', year, archived: false },
-      { id: 'ce', name: 'CE1 / CE2', year, archived: false },
-      { id: 'cm', name: 'CM1 / CM2', year, archived: false },
-    ],
+    classes: schoolClasses(year),
     entries,
     submissions: [
       {

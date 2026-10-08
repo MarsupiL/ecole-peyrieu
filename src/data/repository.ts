@@ -1,6 +1,7 @@
 import { openDB, type IDBPDatabase } from 'idb';
 import type { State } from '../domain/types';
 import { seed } from './seed';
+import { upgradeClassRoster } from './classes';
 export interface Repository {
   load(): Promise<State>;
   save(s: State): Promise<void>;
@@ -24,7 +25,11 @@ export class LocalRepository implements Repository {
     const db = await this.open();
     const s = (await db.get('state', 'current')) as State | undefined;
     if (s && s.schema !== 1) throw new Error('storageVersion');
-    if (s) return s;
+    if (s) {
+      const updated = upgradeClassRoster(s);
+      if (updated !== s) await this.save(updated);
+      return updated;
+    }
     const initial = seed();
     await this.seedFiles(initial);
     await this.save(initial);
