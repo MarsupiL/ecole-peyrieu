@@ -1,3 +1,4 @@
+import { ProfileAvatar } from './ProfilePhoto';
 import { useState } from 'react';
 import type { Entry } from '../domain/types';
 import {
@@ -90,7 +91,7 @@ export function Home() {
             aria-pressed={selected === c.id}
             onClick={() => setSelected(c.id)}
           >
-            <span className={`avatar mini tint-${i}`}>{c.name[0]}</span>
+            <ProfileAvatar target={{ kind: 'child', id: c.id }} className={`mini tint-${i}`} />
             {c.name.split(' ')[0]}
             <small>{s.classes.find((g) => g.id === c.classId)?.name}</small>
           </button>
@@ -238,12 +239,11 @@ export function Home() {
                 .filter((x) => x.status === 'active')
                 .slice(0, 5)
                 .map((p, i) => (
-                  <span className={`avatar tint-${i % 4}`} key={p.id}>
-                    {p.name
-                      .split(' ')
-                      .map((n) => n[0])
-                      .join('')}
-                  </span>
+                  <ProfileAvatar
+                    target={{ kind: 'adult', id: p.id }}
+                    className={`tint-${i % 4}`}
+                    key={p.id}
+                  />
                 ))}
             </div>
             <button className="text-button" onClick={() => go('help')}>

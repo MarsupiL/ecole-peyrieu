@@ -76,6 +76,35 @@ export const statusNames: Record<string, [string, string]> = {
   deadline: ['Délai dépassé', 'Past deadline'],
 };
 export const errors: Record<string, [string, string]> = {
+  protectedAccount: [
+    'Votre compte de direction est protégé contre le retrait de ses propres accès.',
+    'Your director account cannot remove its own access.',
+  ],
+  invalidBirthDate: [
+    'Indiquez une date de naissance valide, antérieure ou égale à aujourd’hui.',
+    'Enter a valid date of birth on or before today.',
+  ],
+  invalidMembership: [
+    'Vérifiez les rôles, les liens et les affectations.',
+    'Check roles, links and assignments.',
+  ],
+  invalidRepresentative: [
+    'Choisissez un parent vérifié ayant un enfant dans cette classe.',
+    'Choose a verified parent with a child in this class.',
+  ],
+  invalidMandate: [
+    'La fin du mandat doit être comprise entre aujourd’hui et la fin de l’année scolaire.',
+    'The mandate must end between today and the end of the school year.',
+  ],
+  profilePhotoSize: [
+    'Choisissez une photo non vide de 5 Mo maximum.',
+    'Choose a non-empty photo up to 5 MB.',
+  ],
+  profilePhotoType: [
+    'Choisissez une image JPEG, PNG ou WebP valide.',
+    'Choose a valid JPEG, PNG or WebP image.',
+  ],
+
   useRevision: [
     'Cette réponse est déjà transmise. Confirmez une révision pour conserver son historique.',
     'This response is already submitted. Confirm a revision to preserve its history.',

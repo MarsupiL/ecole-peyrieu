@@ -1,3 +1,4 @@
+import { ProfileAvatar, ProfilePhotoEditor } from './ProfilePhoto';
 import { useState } from 'react';
 import { HeartPulse, ShieldCheck, Lock } from 'lucide-react';
 import { useApp, formatDate, services } from './context';
@@ -45,12 +46,7 @@ export function Children({ id }: { id?: string }) {
           .map((c, i) => (
             <Card key={c.id}>
               <div className="row">
-                <span className={`avatar tint-${i % 4}`}>
-                  {c.name
-                    .split(' ')
-                    .map((v) => v[0])
-                    .join('')}
-                </span>
+                <ProfileAvatar target={{ kind: 'child', id: c.id }} className={`tint-${i % 4}`} />
                 <div>
                   <h3 style={{ marginBottom: 0 }}>{c.name}</h3>
                   <small>
@@ -142,7 +138,7 @@ function ChildDetail({ c }: { c: Child }) {
     <>
       <PageTitle
         title={c.name}
-        subtitle={`${s.classes.find((g) => g.id === c.classId)?.name} · ${formatDate(c.dob, locale)} · ${t('Profil fictif', 'Fictional profile')}`}
+        subtitle={`${s.classes.find((g) => g.id === c.classId)?.name ?? 'Sans classe'} · ${formatDate(c.dob, locale)} · ${t('Profil fictif', 'Fictional profile')}`}
         action={
           own && (
             <button className="primary" onClick={() => setEdit(true)}>
@@ -151,6 +147,10 @@ function ChildDetail({ c }: { c: Child }) {
           )
         }
       />
+      <div className="child-photo-row">
+        <ProfileAvatar target={{ kind: 'child', id: c.id }} className="portrait" />
+        <ProfilePhotoEditor target={{ kind: 'child', id: c.id }} />
+      </div>
       <div className="detail-layout">
         <div className="stack">
           <Card>

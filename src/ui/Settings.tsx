@@ -1,3 +1,4 @@
+import { ProfilePhotoEditor } from './ProfilePhoto';
 import { useState } from 'react';
 import { Bell, Clock, Download, RefreshCw, Smartphone } from 'lucide-react';
 import { useApp, formatDate, kindNames } from './context';
@@ -162,6 +163,7 @@ export function Settings() {
         )}
       />
       <Card>
+        <ProfilePhotoEditor target={{ kind: 'adult', id: a.id }} />
         <h2>{t('Mes coordonnées personnelles', 'My personal contact details')}</h2>
         <Field
           label={t('Contact fictif de ce profil', 'Fictional contact for this persona')}

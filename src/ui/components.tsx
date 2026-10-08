@@ -368,8 +368,16 @@ export function Photo({ e }: { e: Entry }) {
     </p>
   ) : null;
 }
-export const AddButton = ({ children, onClick }: { children: ReactNode; onClick: () => void }) => (
-  <button className="primary" onClick={onClick}>
+export const AddButton = ({
+  children,
+  onClick,
+  disabled,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+}) => (
+  <button className="primary" onClick={onClick} disabled={disabled}>
     <Plus size={18} />
     {children}
   </button>

@@ -1,18 +1,17 @@
 import { useState } from 'react';
 import { useApp, roles, services, formatDate } from './context';
-import { PageTitle, Card, Field, Badge, Modal, AddButton } from './components';
+import { PageTitle, Card, Field, Modal, AddButton } from './components';
 import { Denied } from './Children';
-import { director } from '../domain/policy';
+import { director, canAdministrate, currentChild, currentClass } from '../domain/policy';
+import { adminAdult, invite, rollover, auditView, importChildren } from '../domain/engine';
+import type { Adult, Role, Service } from '../domain/types';
 import {
-  adminAdult,
-  invite,
-  moveChild,
-  createClass,
-  rollover,
-  auditView,
-  importChildren,
-} from '../domain/engine';
-import type { Adult, Role, Service, MembershipStatus } from '../domain/types';
+  AdultsPanel,
+  AdultEditor,
+  PupilsPanel,
+  RepresentativesPanel,
+  AdminRightsPanel,
+} from './UserManagement';
 import { csv, download } from '../domain/exports';
 export function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
@@ -43,25 +42,27 @@ export function parseCsv(text: string): string[][] {
 }
 export function Administration() {
   const { s, a, t, locale, run, toast } = useApp();
-  const [tab, setTab] = useState('adults');
-  const [query, setQuery] = useState('');
+  const [tab, setTab] = useState(director(s, a) ? 'adults' : 'children');
   const [editing, setEditing] = useState<Adult>();
   const [inviting, setInviting] = useState(false);
   const [name, setName] = useState('');
+  const [contact, setContact] = useState('');
+  const [selectedServices, setServices] = useState<Service[]>(['care']);
   const [role, setRole] = useState<Role>('guardian');
   const [childId, setChild] = useState('');
   const [classId, setClass] = useState(s.classes[0].id);
-  const [newClass, setNewClass] = useState('');
   const [roll, setRoll] = useState(false);
   const [invitation, setInvitation] = useState<Adult>();
-  if (!director(s, a)) return <Denied />;
+  if (!canAdministrate(s, a)) return <Denied />;
   const tabs = [
     ['adults', t('Adultes et accès', 'Adults & access')],
     ['children', t('Enfants et classes', 'Children & classes')],
+    ['representatives', 'Parents délégués'],
+    ['rights', 'Droits et recommandations'],
     ['import', t('Import CSV', 'CSV import')],
     ['year', t('Année scolaire', 'School year')],
     ['audit', t('Journal des actions', 'Audit log')],
-  ];
+  ].filter(([id]) => director(s, a) || ['children', 'representatives', 'rights'].includes(id));
   return (
     <>
       <PageTitle
@@ -71,9 +72,21 @@ export function Administration() {
           'Verify links, assign roles and prepare the next school year.',
         )}
         action={
-          <AddButton onClick={() => setInviting(true)}>
-            {t('Inviter un adulte', 'Invite an adult')}
-          </AddButton>
+          director(s, a) && (
+            <AddButton
+              onClick={() => {
+                setName('');
+                setContact('');
+                setServices(['care']);
+                setChild('');
+                setRole('guardian');
+                setClass(s.classes.find((c) => currentClass(s, c.id))?.id ?? '');
+                setInviting(true);
+              }}
+            >
+              {t('Inviter un adulte', 'Invite an adult')}
+            </AddButton>
+          )
         }
       />
       <div className="filters">
@@ -84,153 +97,14 @@ export function Administration() {
         ))}
       </div>
       <div style={{ height: 20 }} />
-      {tab === 'adults' && (
-        <Card>
-          <Field label={t('Rechercher un adulte', 'Search adults')}>
-            <input value={query} onChange={(e) => setQuery(e.target.value)} />
-          </Field>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>{t('Profil', 'Persona')}</th>
-                  <th>{t('Rôles', 'Roles')}</th>
-                  <th>{t('Statut', 'Status')}</th>
-                  <th>{t('Actions', 'Actions')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {s.adults
-                  .filter((p) => p.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()))
-                  .map((p) => (
-                    <tr key={p.id}>
-                      <td>{p.name}</td>
-                      <td>{p.roles.map((r) => t(...roles[r])).join(' · ')}</td>
-                      <td>
-                        <Badge value={p.status} />
-                      </td>
-                      <td>
-                        <div className="row">
-                          {p.id !== a.id && (
-                            <button onClick={() => setEditing(p)}>{t('Gérer', 'Manage')}</button>
-                          )}
-                          {p.status === 'invited' && (
-                            <button onClick={() => setInvitation(p)}>
-                              {t('Voir l’invitation', 'View invitation')}
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+      {tab === 'adults' && director(s, a) && (
+        <AdultsPanel onEdit={setEditing} onInvitation={setInvitation} />
       )}
-      {tab === 'children' && (
-        <div className="stack">
-          <Card>
-            <h2>{t('Classes fictives', 'Fictional classes')}</h2>
-            <div className="row">
-              {s.classes.map((c) => (
-                <span key={c.id} className="scope-pill">
-                  {c.name} · {s.children.filter((p) => p.classId === c.id).length}
-                </span>
-              ))}
-            </div>
-            <div className="toolbar padded">
-              <input
-                aria-label={t('Nouvelle classe', 'New class')}
-                placeholder={t('Nom de la nouvelle classe', 'New class name')}
-                value={newClass}
-                onChange={(ev) => setNewClass(ev.target.value)}
-              />
-              <button
-                onClick={async () => {
-                  try {
-                    await run((s) => createClass(s, a.id, newClass));
-                    setNewClass('');
-                  } catch {}
-                }}
-              >
-                {t('Ajouter', 'Add')}
-              </button>
-            </div>
-          </Card>
-          <Card>
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>{t('Enfant', 'Child')}</th>
-                    <th>{t('Classe', 'Class')}</th>
-                    <th>{t('Services', 'Services')}</th>
-                    <th>{t('Responsables vérifiés', 'Verified guardians')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {s.children.map((c) => (
-                    <tr key={c.id}>
-                      <td>{c.name}</td>
-                      <td>
-                        <select
-                          aria-label={`${t('Classe de', 'Class for')} ${c.name}`}
-                          value={c.classId}
-                          onChange={(ev) => {
-                            const value = ev.currentTarget.value;
-                            void run((s) => moveChild(s, a.id, c.id, value, c.services)).catch(
-                              () => {},
-                            );
-                          }}
-                        >
-                          {s.classes.map((g) => (
-                            <option key={g.id} value={g.id}>
-                              {g.name}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td>
-                        {(Object.keys(services) as Service[]).map((v) => (
-                          <label className="check" key={v}>
-                            <input
-                              type="checkbox"
-                              checked={c.services.includes(v)}
-                              onChange={(ev) => {
-                                const checked = ev.currentTarget.checked;
-                                void run((s) =>
-                                  moveChild(
-                                    s,
-                                    a.id,
-                                    c.id,
-                                    c.classId,
-                                    checked
-                                      ? [...c.services, v]
-                                      : c.services.filter((x) => x !== v),
-                                  ),
-                                ).catch(() => {});
-                              }}
-                            />
-                            {t(...services[v])}
-                          </label>
-                        ))}
-                      </td>
-                      <td>
-                        {c.guardians
-                          .map((id) => s.adults.find((p) => p.id === id)?.name)
-                          .join(', ') || '—'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </div>
-      )}
-      {tab === 'import' && <ImportPanel />}
-      {tab === 'year' && (
+      {tab === 'children' && <PupilsPanel />}
+      {tab === 'representatives' && <RepresentativesPanel />}
+      {tab === 'rights' && <AdminRightsPanel />}
+      {tab === 'import' && director(s, a) && <ImportPanel />}
+      {tab === 'year' && director(s, a) && (
         <Card>
           <h2>{s.year}</h2>
           <p>
@@ -250,7 +124,7 @@ export function Administration() {
           ))}
         </Card>
       )}
-      {tab === 'audit' && (
+      {tab === 'audit' && director(s, a) && (
         <Card>
           <h2>
             {t('Actions administratives et publications', 'Administration and publication actions')}
@@ -300,8 +174,22 @@ export function Administration() {
           <Field label={t('Nom fictif', 'Fictional name')}>
             <input value={name} onChange={(ev) => setName(ev.target.value)} />
           </Field>
+          <Field label="Contact fictif (facultatif)">
+            <input
+              value={contact}
+              maxLength={250}
+              onChange={(ev) => setContact(ev.target.value)}
+              placeholder="nom@example.invalid"
+            />
+          </Field>
           <Field label={t('Rôle proposé', 'Proposed role')}>
-            <select value={role} onChange={(ev) => setRole(ev.target.value as Role)}>
+            <select
+              value={role}
+              onChange={(ev) => {
+                setRole(ev.target.value as Role);
+                setChild('');
+              }}
+            >
               {Object.entries(roles).map(([id, label]) => (
                 <option key={id} value={id}>
                   {t(...label)}
@@ -309,30 +197,61 @@ export function Administration() {
               ))}
             </select>
           </Field>
-          <Field
-            label={t(
-              'Lien à un enfant (vérifié par la direction)',
-              'Child link (verified by director)',
-            )}
-          >
-            <select value={childId} onChange={(ev) => setChild(ev.target.value)}>
-              <option value="">{t('Aucun', 'None')}</option>
-              {s.children.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label={t('Classe du rôle proposé', 'Class for the proposed role')}>
-            <select value={classId} onChange={(ev) => setClass(ev.target.value)}>
-              {s.classes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </Field>
+          {role === 'service' && (
+            <fieldset className="admin-checks">
+              <legend>Services attribués</legend>
+              <div className="checks">
+                {Object.entries(services).map(([id, label]) => (
+                  <label className="check" key={id}>
+                    <input
+                      type="checkbox"
+                      checked={selectedServices.includes(id as Service)}
+                      onChange={(ev) =>
+                        setServices(
+                          ev.target.checked
+                            ? [...selectedServices, id as Service]
+                            : selectedServices.filter((v) => v !== id),
+                        )
+                      }
+                    />
+                    {label[0]}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )}
+          {['guardian', 'representative'].includes(role) && (
+            <Field
+              label={t(
+                'Lien à un enfant (vérifié par la direction)',
+                'Child link (verified by director)',
+              )}
+            >
+              <select value={childId} onChange={(ev) => setChild(ev.target.value)}>
+                <option value="">{t('Aucun', 'None')}</option>
+                {s.children
+                  .filter((c) => currentChild(s, c))
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+              </select>
+            </Field>
+          )}
+          {['teacher', 'representative'].includes(role) && (
+            <Field label={t('Classe du rôle proposé', 'Class for the proposed role')}>
+              <select value={classId} onChange={(ev) => setClass(ev.target.value)}>
+                {s.classes
+                  .filter((c) => currentClass(s, c.id))
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+              </select>
+            </Field>
+          )}
           <p className="notice-inline">
             {t(
               'Aucun e-mail ne sera envoyé. La validation du lien est simulée par votre action de direction.',
@@ -343,7 +262,12 @@ export function Administration() {
             className="primary"
             onClick={async () => {
               try {
-                await run((s) => invite(s, a.id, name, role, childId, classId));
+                await run((s) =>
+                  invite(s, a.id, name, role, childId, classId, {
+                    contact,
+                    services: selectedServices,
+                  }),
+                );
                 setInviting(false);
               } catch {}
             }}
@@ -430,163 +354,6 @@ export function Administration() {
         </Modal>
       )}
     </>
-  );
-}
-function AdultEditor({ target, onClose }: { target: Adult; onClose: () => void }) {
-  const { s, a, t, run } = useApp();
-  const [p, setP] = useState(target);
-  const toggle = (
-    key: 'classes' | 'children' | 'representativeClasses' | 'reviewers' | 'services',
-    value: string,
-    checked: boolean,
-  ) =>
-    setP((x) => ({
-      ...x,
-      [key]: checked ? [...x[key], value] : x[key].filter((v) => v !== value),
-    }));
-  return (
-    <Modal title={t('Gérer les accès', 'Manage access') + ` · ${p.name}`} onClose={onClose}>
-      <Field label={t('Statut du compte', 'Account status')}>
-        <select
-          value={p.status}
-          onChange={(ev) => setP({ ...p, status: ev.target.value as MembershipStatus })}
-        >
-          {(['invited', 'active', 'suspended', 'expired', 'revoked'] as MembershipStatus[]).map(
-            (v) => (
-              <option key={v} value={v}>
-                {v === 'active'
-                  ? t('Actif', 'Active')
-                  : v === 'invited'
-                    ? t('Invité', 'Invited')
-                    : v === 'suspended'
-                      ? t('Suspendu', 'Suspended')
-                      : v === 'expired'
-                        ? t('Expiré', 'Expired')
-                        : t('Révoqué', 'Revoked')}
-              </option>
-            ),
-          )}
-        </select>
-      </Field>
-      {p.roles.includes('guardian') && (
-        <Field label={t('Enfants vérifiés', 'Verified child links')}>
-          <div className="checks">
-            {s.children.map((c) => (
-              <label key={c.id} className="check">
-                <input
-                  type="checkbox"
-                  checked={p.children.includes(c.id)}
-                  onChange={(ev) => toggle('children', c.id, ev.target.checked)}
-                />
-                {c.name}
-              </label>
-            ))}
-          </div>
-        </Field>
-      )}
-      {p.roles.includes('teacher') && (
-        <Field label={t('Classes attribuées', 'Assigned classes')}>
-          <div className="checks">
-            {s.classes.map((c) => (
-              <label key={c.id} className="check">
-                <input
-                  type="checkbox"
-                  checked={p.classes.includes(c.id)}
-                  onChange={(ev) => toggle('classes', c.id, ev.target.checked)}
-                />
-                {c.name}
-              </label>
-            ))}
-          </div>
-        </Field>
-      )}
-      {p.roles.includes('guardian') && (
-        <>
-          <Field label={t('Mandats de représentant', 'Representative mandates')}>
-            <div className="checks">
-              {s.classes.map((c) => (
-                <label key={c.id} className="check">
-                  <input
-                    type="checkbox"
-                    checked={p.representativeClasses.includes(c.id)}
-                    onChange={(ev) => toggle('representativeClasses', c.id, ev.target.checked)}
-                  />
-                  {c.name}
-                </label>
-              ))}
-            </div>
-          </Field>
-          <Field label={t('Fin du mandat', 'Mandate end')}>
-            <input
-              type="date"
-              value={p.mandateEnd}
-              onChange={(ev) => setP({ ...p, mandateEnd: ev.target.value })}
-            />
-          </Field>
-        </>
-      )}
-      {p.roles.includes('service') && (
-        <Field label={t('Services attribués', 'Assigned services')}>
-          <div className="checks">
-            {Object.entries(services).map(([v, label]) => (
-              <label key={v} className="check">
-                <input
-                  type="checkbox"
-                  checked={p.services.includes(v as Service)}
-                  onChange={(ev) => toggle('services', v, ev.target.checked)}
-                />
-                {t(...label)}
-              </label>
-            ))}
-          </div>
-        </Field>
-      )}
-      {!p.roles.includes('guardian') && (
-        <Field
-          label={t(
-            'Vérification confidentielle, enfant par enfant',
-            'Confidential reviewer, child by child',
-          )}
-        >
-          <div className="checks">
-            {s.children.map((c) => (
-              <label className="check" key={c.id}>
-                <input
-                  type="checkbox"
-                  checked={p.reviewers.includes(c.id)}
-                  onChange={(ev) => toggle('reviewers', c.id, ev.target.checked)}
-                />
-                {c.name}
-              </label>
-            ))}
-          </div>
-        </Field>
-      )}
-      <button
-        className="primary"
-        onClick={async () => {
-          try {
-            await run((s) =>
-              adminAdult(s, a.id, p.id, {
-                status: p.status,
-                children: p.children,
-                classes: p.classes,
-                services: p.services,
-                reviewers: p.reviewers,
-                representativeClasses: p.representativeClasses,
-                mandateEnd: p.mandateEnd,
-                roles: p.representativeClasses.length
-                  ? [...new Set([...p.roles, 'representative' as Role])]
-                  : p.roles.filter((r) => r !== 'representative'),
-              }),
-            );
-            onClose();
-          } catch {}
-        }}
-      >
-        {t('Vérifier et appliquer', 'Verify and apply')}
-      </button>
-    </Modal>
   );
 }
 function ImportPanel() {
@@ -734,6 +501,13 @@ function ImportPanel() {
 }
 function auditLabel(action: string, locale: string) {
   const map: Record<string, [string, string]> = {
+    pupilCreated: ['Dossier élève créé', 'Pupil created'],
+    pupilUpdated: ['Dossier élève modifié', 'Pupil updated'],
+    pupilUnassigned: ['Élève retiré de sa classe', 'Pupil unassigned'],
+    pupilArchived: ['Départ élève archivé', 'Pupil archived'],
+    pupilRestored: ['Élève réinscrit', 'Pupil restored'],
+    representativeMandate: ['Mandat de parent délégué modifié', 'Representative mandate updated'],
+    profilePhoto: ['Photo de profil modifiée', 'Profile photo updated'],
     save: ['Enregistrement', 'Save'],
     submit: ['Transmission', 'Submission'],
     review: ['Vérification', 'Review'],
