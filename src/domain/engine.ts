@@ -974,6 +974,7 @@ export function setProfilePhoto(
       requireRule(file.size > 0 && file.size <= 5 * 1024 * 1024, 'profilePhotoSize');
       requireRule(file.id && !n.attachments.some((f) => f.id === file.id), 'invalidFile');
     }
+    record.demoPhotoHidden = true;
     if (record.photoId) n.attachments = n.attachments.filter((f) => f.id !== record.photoId);
     if (file) {
       n.attachments.push({

@@ -8,6 +8,7 @@ export type Choice = 'allowed' | 'refused' | 'awaiting' | 'withdrawn';
 export type ProfileTarget = { kind: 'child' | 'adult'; id: string };
 export interface Adult {
   photoId?: string;
+  demoPhotoHidden?: boolean;
   id: string;
   name: string;
   roles: Role[];
@@ -35,6 +36,7 @@ export interface Adult {
 }
 export interface Child {
   photoId?: string;
+  demoPhotoHidden?: boolean;
   id: string;
   name: string;
   dob: string;
