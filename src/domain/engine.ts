@@ -19,7 +19,6 @@ import {
   active,
   canManageProfilePhoto,
   profileRecord,
-  staffPhotoEligible,
   guardian,
   teaches,
   director,
@@ -1100,10 +1099,6 @@ export function adminAdult(
       contact: next.contact.trim(),
       verifiedBy: a.id,
     });
-    if (!staffPhotoEligible(target) && target.photoId) {
-      n.attachments = n.attachments.filter((f) => f.id !== target.photoId);
-      delete target.photoId;
-    }
     setGuardianLinks(n, target, next.children);
     if (target.status === 'revoked') target.removedAt = n.clock;
     else {

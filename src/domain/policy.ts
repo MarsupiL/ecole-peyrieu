@@ -257,7 +257,7 @@ export function canManageProfilePhoto(s: State, a: Adult, target: ProfileTarget)
     return !!c && currentChild(s, c) && (director(s, a) || teaches(s, a, c));
   }
   const p = s.adults.find((p) => p.id === target.id);
-  return !!p && p.year === s.year && staffPhotoEligible(p) && (director(s, a) || p.id === a.id);
+  return !!p && p.year === s.year && (director(s, a) || p.id === a.id);
 }
 export function canReadProfilePhoto(s: State, a: Adult, target: ProfileTarget): boolean {
   if (!active(s, a)) return false;
@@ -265,9 +265,8 @@ export function canReadProfilePhoto(s: State, a: Adult, target: ProfileTarget): 
   const p = s.adults.find((p) => p.id === target.id);
   return (
     !!p &&
-    staffPhotoEligible(p) &&
     (canManageProfilePhoto(s, a, target) ||
-      (active(s, p) && audienceAllows(s, a, { type: 'school', ids: [] })))
+      (staffPhotoEligible(p) && active(s, p) && audienceAllows(s, a, { type: 'school', ids: [] })))
   );
 }
 export function canReadFile(s: State, a: Adult, f: Attachment): boolean {
