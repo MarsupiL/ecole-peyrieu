@@ -10,6 +10,7 @@ import {
   type ReactElement,
   type ReactNode,
   type SelectHTMLAttributes,
+  type InputHTMLAttributes,
   type RefAttributes,
 } from 'react';
 import { X, Download, Paperclip, ArrowUpRight, Lock, Plus } from 'lucide-react';
@@ -104,6 +105,34 @@ function FormSelect({
     </div>
   );
 }
+function FormFile({
+  control,
+  id,
+}: {
+  control: ReactElement<InputHTMLAttributes<HTMLInputElement>>;
+  id: string;
+}) {
+  const [name, setName] = useState('');
+  return (
+    <div className="file-select">
+      <span className="file-select-label" aria-hidden="true">
+        Choisir un fichier
+      </span>
+      <span className="file-select-name" aria-hidden="true">
+        {name || 'Aucun fichier sélectionné'}
+      </span>
+      {cloneElement(control, {
+        id,
+        onChange: async (event) => {
+          const input = event.currentTarget;
+          setName(input.files?.[0]?.name ?? '');
+          await control.props.onChange?.(event);
+          setName(input.files?.[0]?.name ?? '');
+        },
+      })}
+    </div>
+  );
+}
 export function Field({
   label,
   children,
@@ -128,6 +157,12 @@ export function Field({
       {index >= 0 ? <label htmlFor={id}>{label}</label> : <span>{label}</span>}
       {nodes.map((c, i) => {
         if (i !== index) return c;
+        if (
+          isValidElement<InputHTMLAttributes<HTMLInputElement>>(c) &&
+          c.type === 'input' &&
+          c.props.type === 'file'
+        )
+          return <FormFile key={i} id={id} control={c} />;
         if (isValidElement(c) && c.type === 'select')
           return (
             <FormSelect
@@ -238,7 +273,7 @@ export function FileButton({ file }: { file: Attachment }) {
       <Paperclip size={17} />
       <span>
         {file.name}
-        <small>{Math.ceil(file.size / 1024)} KB</small>
+        <small>{Math.ceil(file.size / 1024)} Ko</small>
       </span>
       <Download size={16} />
     </button>
