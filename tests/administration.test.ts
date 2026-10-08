@@ -227,14 +227,15 @@ describe('private profile photos', () => {
     const n = createChild(s, 'emma', input);
     expect(demoPortrait(n, director, { kind: 'child', id: n.children.at(-1)!.id })).toBeUndefined();
   });
-  it('uses profile visibility for defaults and excludes combined parent/staff roles', () => {
+  it('uses profile visibility for defaults including combined parent/staff roles', () => {
     const s = setup();
     expect(demoPortrait(s, adult(s, 'alice'), target)).toMatch(/portraits\/c1\.webp$/);
     expect(demoPortrait(s, adult(s, 'ines'), target)).toBeUndefined();
     adult(s, 'alice').status = 'suspended';
     expect(demoPortrait(s, adult(s, 'alice'), target)).toBeUndefined();
     adult(s, 'emma').roles.push('guardian');
-    expect(demoPortrait(s, adult(s, 'director'), { kind: 'adult', id: 'emma' })).toBeUndefined();
+    expect(demoPortrait(s, adult(s, 'director'), { kind: 'adult', id: 'emma' })).toBeDefined();
+    expect(demoPortrait(s, adult(s, 'ines'), { kind: 'adult', id: 'emma' })).toBeUndefined();
   });
   it('preserves uploaded photos and remembers removal of both pupil and staff defaults', () => {
     for (const t of [target, { kind: 'adult', id: 'emma' } as const]) {
@@ -255,18 +256,18 @@ describe('private profile photos', () => {
     expect(demoPortrait(s, adult(s, 'director'), target)).toBeUndefined();
     expect(demoPortrait(s, adult(s, 'director'), { kind: 'child', id: 'c2' })).toBeDefined();
   });
-  it('allows direction, assigned teachers and staff self-service but excludes parents', () => {
+  it('allows direction, assigned teachers and adult self-service without parent access to child photos', () => {
     const s = setup();
     expect(canManageProfilePhoto(s, adult(s, 'director'), target)).toBe(true);
     expect(canManageProfilePhoto(s, adult(s, 'emma'), target)).toBe(true);
     for (const id of ['alice', 'ines', 'nora', 'leonie'])
       expect(() => setProfilePhoto(s, id, target, photo)).toThrow('denied');
-    expect(() => setProfilePhoto(s, 'director', { kind: 'adult', id: 'alice' }, photo)).toThrow(
-      'denied',
-    );
-    expect(() => setProfilePhoto(s, 'alice', { kind: 'adult', id: 'alice' }, photo)).toThrow(
-      'denied',
-    );
+    for (const actor of ['director', 'alice'])
+      expect(
+        setProfilePhoto(s, actor, { kind: 'adult', id: 'alice' }, photo).adults.find(
+          (p) => p.id === 'alice',
+        )?.photoId,
+      ).toBe(photo.id);
     expect(() => setProfilePhoto(s, 'emma', { kind: 'adult', id: 'hugo' }, photo)).toThrow(
       'denied',
     );
@@ -297,14 +298,33 @@ describe('private profile photos', () => {
       'profilePhotoSize',
     );
   });
-  it('removes staff photos when a guardian role is assigned, including direct file access', () => {
+  it('preserves uploaded photos when a guardian role is assigned with owner and direction access', () => {
     let s = setProfilePhoto(setup(), 'director', { kind: 'adult', id: 'emma' }, photo);
     const file = s.attachments.at(-1)!;
     s = adminAdult(s, 'director', 'emma', { roles: ['teacher', 'guardian'] });
-    expect(adult(s, 'emma').photoId).toBeUndefined();
+    expect(adult(s, 'emma').photoId).toBe(photo.id);
+    expect(canReadFile(s, adult(s, 'emma'), file)).toBe(true);
+    expect(canReadFile(s, adult(s, 'director'), file)).toBe(true);
     expect(canReadFile(s, adult(s, 'alice'), file)).toBe(false);
     expect(canManageProfilePhoto(s, adult(s, 'director'), { kind: 'adult', id: 'emma' })).toBe(
-      false,
+      true,
     );
+  });
+  it('keeps parent portraits scoped to their owner and direction, including direct file access', () => {
+    for (const id of ['alice', 'ines']) {
+      const parentTarget: ProfileTarget = { kind: 'adult', id };
+      let s = setProfilePhoto(setup(), id, parentTarget, photo);
+      const file = s.attachments.at(-1)!;
+      expect(canReadFile(s, adult(s, id), file)).toBe(true);
+      expect(canReadFile(s, adult(s, 'director'), file)).toBe(true);
+      for (const other of ['thomas', 'luc', 'emma', 'nora']) {
+        expect(canReadFile(s, adult(s, other), file)).toBe(false);
+        expect(() => setProfilePhoto(s, other, parentTarget, null)).toThrow('denied');
+      }
+      s = setProfilePhoto(s, id, parentTarget, null);
+      expect(canReadFile(s, adult(s, id), file)).toBe(false);
+      s = adminAdult(s, 'director', id, { status: 'suspended' });
+      expect(() => setProfilePhoto(s, id, parentTarget, photo)).toThrow('denied');
+    }
   });
 });
