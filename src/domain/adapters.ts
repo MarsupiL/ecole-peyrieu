@@ -1,8 +1,7 @@
 /** Integration boundaries. These adapters only mutate the visitor's local demonstration. */
-import type { State, Service, Entry, Adult, Locale } from './types';
+import type { State, Service } from './types';
 import { reserve, bookingStatus, advanceClock } from './engine';
-import { calendar } from './exports';
-export interface ReservationProvider {
+interface ReservationProvider {
   readonly mode: 'local-simulation';
   request(
     s: State,
@@ -16,7 +15,7 @@ export interface ReservationProvider {
   requestCancellation(s: State, actor: string, id: string): State;
   confirmCancellation(s: State, actor: string, id: string): State;
 }
-export class LocalReservationProvider implements ReservationProvider {
+class LocalReservationProvider implements ReservationProvider {
   readonly mode = 'local-simulation' as const;
   request = reserve;
   confirm(s: State, actor: string, id: string) {
@@ -36,13 +35,5 @@ export interface NotificationScheduler {
 export const localNotifications: NotificationScheduler = {
   mode: 'local-simulation',
   tick: advanceClock,
-};
-export interface CalendarExportAdapter {
-  export(s: State, a: Adult, entries: Entry[], locale: Locale, appUrl: string): string;
-  readonly synchronisesLocalEdits: false;
-}
-export const localCalendar: CalendarExportAdapter = {
-  export: calendar,
-  synchronisesLocalEdits: false,
 };
 export const localReservations = new LocalReservationProvider();

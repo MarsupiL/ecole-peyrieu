@@ -13,7 +13,7 @@ import {
   AdminRightsPanel,
 } from './UserManagement';
 import { csv, download } from '../domain/exports';
-export function parseCsv(text: string): string[][] {
+function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
   let row: string[] = [],
     cell = '',
@@ -314,7 +314,8 @@ export function Administration() {
           onClose={() => setRoll(false)}
         >
           <p>
-            {s.classes.length} {t('classes archivées', 'classes archived')} · {s.children.length}{' '}
+            {s.classes.filter((c) => currentClass(s, c.id)).length}{' '}
+            {t('classes archivées', 'classes archived')} · {s.children.length}{' '}
             {t('profils à revérifier', 'profiles to reconfirm')}
           </p>
           <ul>
@@ -359,7 +360,7 @@ export function Administration() {
 function ImportPanel() {
   const { s, a, t, run, toast } = useApp();
   const [text, setText] = useState(
-    'name,classId,dob\nÉloi Exemple,ce,2019-04-12\nZoé Exemple,cp,2020-08-23',
+    `name,classId,dob\nÉloi Exemple,${s.classes.find((c) => currentClass(s, c.id) && c.name === 'CE1 / CE2')?.id ?? ''},2019-04-12\nZoé Exemple,${s.classes.find((c) => currentClass(s, c.id) && c.name === 'CP / CE1')?.id ?? ''},2020-08-23`,
   );
   const [mapping, setMapping] = useState({ name: 0, classId: 1, dob: 2 });
   const [preview, setPreview] = useState(false);
@@ -378,7 +379,7 @@ function ImportPanel() {
   const valid = (r: (typeof rows)[number]) =>
     r.name.trim() &&
     /^\d{4}-\d{2}-\d{2}$/.test(r.dob) &&
-    s.classes.some((c) => c.id === r.classId) &&
+    currentClass(s, r.classId) &&
     !s.children.some((c) => c.name.toLocaleLowerCase() === r.name.toLocaleLowerCase()) &&
     rows.filter((x) => x.name.toLocaleLowerCase() === r.name.toLocaleLowerCase()).length === 1;
   return (
@@ -390,7 +391,11 @@ function ImportPanel() {
             'exemple-import.csv',
             csv([
               ['name', 'classId', 'dob'],
-              ['Éloi Exemple', 'ce', '2019-04-12'],
+              [
+                'Éloi Exemple',
+                s.classes.find((c) => currentClass(s, c.id))?.id ?? '',
+                '2019-04-12',
+              ],
             ]),
             'text/csv;charset=utf-8',
           )

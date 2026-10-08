@@ -2,7 +2,7 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import unusedImports from 'eslint-plugin-unused-imports';
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'playwright-report', 'test-results'] },
+  { ignores: ['dist', 'node_modules', 'playwright-report', 'test-results', 'coverage'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -35,7 +35,7 @@ export default tseslint.config(
     rules: {
       'unused-imports/no-unused-imports': 'error',
       '@typescript-eslint/no-unused-vars': [
-        'warn',
+        'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       'no-empty': ['error', { allowEmptyCatch: true }],

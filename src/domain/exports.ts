@@ -1,9 +1,10 @@
 import { jsPDF } from 'jspdf';
+import { formAtVersion } from './formHistory';
 import { parisInput } from './schoolTime';
 import type { State, Adult, Entry, Locale, Submission } from './types';
 import { canRead, canReadSubmission, canReadFile } from './policy';
-import { requireRule } from './engine';
-export const escapeIcs = (s: string) =>
+import { requireRule } from './commands';
+const escapeIcs = (s: string) =>
   s.replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
 const stamp = (s: string) =>
   new Date(s)
@@ -158,19 +159,24 @@ export function makePdf(title: string, lines: string[], locale: Locale): Blob {
 export function submissionPdf(s: State, a: Adult, x: Submission, locale: Locale) {
   requireRule(canReadSubmission(s, a, x));
   const e = s.entries.find((e) => e.id === x.formId)!;
-  const fields =
-    x.formVersion === e.version ? e.fields : (e.history[x.formVersion - 1]?.fields ?? e.fields);
+  const { title, fields } = formAtVersion(e, x.formVersion, x.formSnapshot);
   const lines = [
     `${x.snapshot.child} · ${s.adults.find((a) => a.id === x.author)?.name}`,
     `${locale === 'fr' ? 'Déposé le' : 'Submitted'} ${x.at} · v${x.formVersion}`,
     locale === 'fr' ? 'Confirmation explicite enregistrée.' : 'Explicit confirmation recorded.',
+    ...(!fields.length
+      ? [
+          'Libellés d’origine indisponibles pour cette ancienne réponse.',
+          ...Object.values(x.answers).map((v) => (Array.isArray(v) ? v.join(', ') : v)),
+        ]
+      : []),
     ...fields.map((f) => {
       const v = x.answers[f.id];
       const values = Array.isArray(v) ? v : [v ?? ''];
       return `${f.label[locale] || f.label.fr}: ${values.map((z) => (f.type === 'file' ? (s.attachments.find((file) => file.id === z && canReadFile(s, a, file))?.name ?? (locale === 'fr' ? 'Fichier à accès restreint' : 'Restricted file')) : (f.options?.[Number(z)]?.[locale] ?? (z === 'allowed' ? (locale === 'fr' ? 'Accord' : 'Approved') : z === 'refused' ? (locale === 'fr' ? 'Refus' : 'Declined') : z)))).join(', ')}`;
     }),
   ];
-  return makePdf(e.title[locale] || e.title.fr, lines, locale);
+  return makePdf(title[locale] || title.fr, lines, locale);
 }
 export function download(name: string, content: Blob | string, type = 'text/plain;charset=utf-8') {
   const blob = typeof content === 'string' ? new Blob([content], { type }) : content;

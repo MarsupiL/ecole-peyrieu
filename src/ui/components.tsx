@@ -258,7 +258,7 @@ export function EntryCard({ e, onClick }: { e: Entry; onClick?: () => void }) {
     </article>
   );
 }
-export function FileButton({ file }: { file: Attachment }) {
+function FileButton({ file }: { file: Attachment }) {
   const { s, a, t, toast } = useApp();
   const allowed = canReadFile(s, a, file);
   return allowed ? (
@@ -324,30 +324,32 @@ export function Upload({
           try {
             const type = await validateFile(f);
             const id = uid();
-            await repository.putBlob(id, f);
-            await run((s) =>
-              change(s, a.id, 'attachment', entry?.id ?? childId ?? '', (n, actor) => {
-                if (entry)
-                  requireRule(
-                    n.entries.some((e) => e.id === entry.id && canRead(n, actor, e)) ||
-                      canAuthor(n, actor, entry.kind, entry.audience, entry.childId),
-                  );
-                if (childId)
-                  requireRule(n.children.some((c) => c.id === childId && guardian(n, actor, c)));
-                n.attachments.push({
-                  id,
-                  name: f.name,
-                  type,
-                  size: f.size,
-                  owner: a.id,
-                  entryId: entry?.id,
-                  childId,
-                  restricted,
-                  at: n.clock,
-                });
-                if (childId && restricted)
-                  n.children.find((c) => c.id === childId)!.evidence.push(id);
-              }),
+            await run(
+              (s) =>
+                change(s, a.id, 'attachment', entry?.id ?? childId ?? '', (n, actor) => {
+                  if (entry)
+                    requireRule(
+                      n.entries.some((e) => e.id === entry.id && canRead(n, actor, e)) ||
+                        canAuthor(n, actor, entry.kind, entry.audience, entry.childId),
+                    );
+                  if (childId)
+                    requireRule(n.children.some((c) => c.id === childId && guardian(n, actor, c)));
+                  n.attachments.push({
+                    id,
+                    name: f.name,
+                    type,
+                    size: f.size,
+                    owner: a.id,
+                    entryId: entry?.id,
+                    childId,
+                    restricted,
+                    at: n.clock,
+                  });
+                  if (childId && restricted)
+                    n.children.find((c) => c.id === childId)!.evidence.push(id);
+                }),
+              undefined,
+              [{ id, blob: f.type === type ? f : new Blob([f], { type }) }],
             );
             onUpload(id);
           } catch (e) {
@@ -387,7 +389,7 @@ export function Photo({ e }: { e: Entry }) {
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, [allowed, file?.id]);
-  return url ? (
+  return allowed && url ? (
     <img
       className="post-photo"
       src={url}

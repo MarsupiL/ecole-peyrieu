@@ -1,5 +1,19 @@
 # Implementation acceptance report
 
+## Code and production-readiness review — 8 October 2026
+
+See [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for findings, corrections, the proposed relational schema and the remaining production blockers. This release hardens the fictional local demo; it introduces no real accounts or backend.
+
+- `npm run check`: ESLint, Knip unused-code/dependency analysis, strict app/test/configuration typechecking, **93 unit/integration tests**, coverage gates and production build pass.
+- Core/data coverage: **84.20% lines, 83.65% statements, 74.78% branches, 79.18% functions**. Repository: **95.19% lines / 90.78% branches**, up from no direct repository coverage. The percentage excludes UI, CSS, scripts and fictional seed/template data; browser checks are reported separately.
+- `npm run test:e2e`: **66 browser checks**: 54 Chromium journeys plus six targeted French/storage journeys in each of Firefox and WebKit. This includes actual two-tab conflict rejection and corrupt-storage recovery in all three engines. Existing responsive/Axe, uploads, offline and update journeys remain covered.
+- New regression tests first reproduced private-draft visibility/processing, runtime field injection, stale editor overwrites and invalid dates before the corresponding fixes. Further tests cover retained historical classes on rollover, immutable form questions/receipt labels, archived records remaining read-only, and inactive-persona denial across entries/files/submissions/notices.
+- Repository tests cover initialization races, transactional revision checks, atomic upload/replacement, injected quota failures, failed-reset rollback, unsupported/corrupt records retained unchanged, missing sample retry, recognized-sample migration, legacy raw Blobs and preservation of edits.
+- `npm audit`: **0 known vulnerabilities** on 8 October 2026, including the newly pinned runtime validator and development tools. This is advisory-database evidence, not an application security certification.
+- Vite still reports the known large-chunk advisory (approximately 991 kB uncompressed / 307 kB gzip for the entry chunk). Lazy route/PDF loading is documented production work. Physical-device, assistive-technology, server security and real-volume/load verification remain outstanding.
+
+CI now uses `npm run check` and installs all three browser engines. Runtime dependency added: pinned Zod for stored-state validation. Development tools added: pinned V8 coverage, fake IndexedDB, Knip and Node 24 type definitions. The workflow permission scopes are unchanged. Coverage and browser reports stay local and are excluded from deployment.
+
 ## Remaining English sample content — 8 October 2026
 
 Removed inline English translations from sample child collectors, messages, representative discussions, collection requests, event locations and automatic photo-review notes. File sizes use French units. Upload controls show French text even in an English-language browser, retaining the native input, labels, keyboard focus and file picker. The sample illustration, two sample PDFs and public calendar feed are also French-only.
@@ -98,11 +112,11 @@ Artifacts from the latest browser run are local in `test-results/` and `playwrig
 ```sh
 npm ci
 npm run check
-npx playwright install chromium
+npx playwright install chromium firefox webkit
 npm run test:e2e
 ```
 
-Playwright starts/reuses the local production preview. The update test uses a separate ephemeral localhost server and two worker versions of the production bundle; it does not overwrite the build or interfere with another app. CI installs Chromium's Linux dependencies before the same browser suite.
+Playwright starts/reuses the local production preview. The update test uses a separate ephemeral localhost server and two worker versions of the production bundle; it does not overwrite the build or interfere with another app. CI installs the Chromium, Firefox and WebKit Linux dependencies before the same browser suite.
 
 ## Design review — 6 October 2026
 

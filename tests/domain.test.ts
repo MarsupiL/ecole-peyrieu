@@ -311,7 +311,9 @@ describe('requests, notifications and calendar', () => {
     const allDay = root
       .getAllSubcomponents('vevent')
       .find((e) => e.getFirstPropertyValue('uid') === 'book-day@peyrieu-school-demo.invalid')!;
-    expect(allDay.getFirstPropertyValue('dtstart').isDate).toBe(true);
+    const starts = allDay.getFirstPropertyValue('dtstart');
+    expect(starts).toBeInstanceOf(ICAL.Time);
+    expect((starts as ICAL.Time).isDate).toBe(true);
     expect(
       root
         .getAllSubcomponents('vevent')

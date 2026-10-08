@@ -22,7 +22,7 @@ The repository is now `MarsupiL/ecole-peyrieu`, serving `/ecole-peyrieu/`. The f
 4. In the new repository's **Settings → Pages**, choose **GitHub Actions** as the build/deployment source. Run the included `Verify and deploy demonstration` workflow.
 5. Open the deployment URL reported by the successful workflow, normally `https://<verified-owner>.github.io/ecole-peyrieu/`. Verify the real URL instead of treating this example as an existing site.
 
-`.github/workflows/pages.yml` installs from the lockfile, lints, runs domain tests, builds, installs Chromium and runs production browser/accessibility/update tests. Only a successful non-PR run uploads `dist` and deploys it. Pull requests are verified without deployment. Trusted GitHub actions are pinned to commit SHAs; the workflow uses Node.js 24, read-only source access during verification and Pages/OIDC permissions in deployment.
+`.github/workflows/pages.yml` installs from the lockfile, runs `npm run check` (lint, unused-code analysis, test/config typechecking, coverage gates and build), installs Chromium/Firefox/WebKit and runs production browser/accessibility/update tests. Only a successful non-PR run uploads `dist` and deploys it. Pull requests are verified without deployment. Trusted GitHub actions are pinned to commit SHAs; the workflow uses Node.js 24, read-only source access during verification and Pages/OIDC permissions in deployment.
 
 ## Project path and artifacts
 

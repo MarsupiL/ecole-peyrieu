@@ -72,7 +72,7 @@ The **Droits et recommandations** tab explains current permissions and suggests 
 
 ## Local data and boundaries
 
-IndexedDB `peyrieu-school-demo-v1` stores typed state and uploaded file blobs. Local storage keys beginning `peyrieu.` retain the active persona and onboarding choice. A schema/version check protects against accidentally reading an unsupported state. Saves are serialized; storage failures show an error. Save a draft before closing a form/editor. Existing bilingual records remain compatible; stored content is preserved without a data reset. Reset clears this app's state and uploaded files, then restores fictional fixtures; it does not clear unrelated websites.
+IndexedDB `peyrieu-school-demo-v1` stores typed state and uploaded file blobs. Local storage keys beginning `peyrieu.` retain the active persona and onboarding choice. Runtime schema and relationship validation protect against damaged or unsupported state without clearing it. State and file writes commit together. Saves are serialized within a tab and compare revisions transactionally across tabs; a stale tab shows a recovery message instead of overwriting another save. Storage failures preserve the previous committed records. Save a draft before closing a form/editor. Existing bilingual records remain compatible; stored content is preserved without a data reset. Reset clears this app's state and uploaded files, then restores fictional fixtures; it does not clear unrelated websites.
 
 **The persona switcher and browser-side policies demonstrate access rules; they are not authentication or a security boundary.** Someone controlling the browser can inspect the local database and bundled fictional records. Browser data is not an encrypted medical-record store. Use only fictional uploads. Do not enter real pupil, family, health, credential or signature data.
 
@@ -86,16 +86,20 @@ The selected logo is **Le crayon qui pousse**: a pencil with two leaves in the a
 
 ## Architecture
 
+Read the [production readiness review](docs/PRODUCTION_READINESS.md) for the verified fixes, remaining blockers, proposed relational data model and staged production plan. The demo is a starting point for production engineering; it is not approved for real school records.
+
 React + TypeScript + Vite; `idb` for IndexedDB, jsPDF for generated documents, Lucide for icons. Dependencies and CI actions are pinned.
 
 | Location                                 | Responsibility                                                               |
 | ---------------------------------------- | ---------------------------------------------------------------------------- |
 | `src/domain/types.ts`                    | Typed entities and state schema                                              |
 | `src/domain/policy.ts`                   | Central membership, audience, record, file and notification policies         |
-| `src/domain/engine.ts`                   | Validated immutable state transitions, history and audit                     |
+| `src/domain/engine.ts`, `administration.ts`, `commands.ts` | Immutable product/administration transitions and shared actor/audit rules |
+| `src/domain/formHistory.ts` | Original question/title projection for submitted forms and receipts |
+| `src/data/stateValidation.ts`, `repository.ts` | Runtime stored-data validation, transactional writes and concurrency checks |
 | `src/domain/exports.ts`, `schoolTime.ts` | Policy-checked PDF/CSV/ICS, file validation and Paris wall-time conversion   |
 | `src/data/`                              | Fictional seed, reusable templates and repository boundary                   |
-| `src/domain/adapters.ts`                 | Explicit local reservation, notification and calendar integration boundaries |
+| `src/domain/adapters.ts`                 | Explicit local reservation and notification integration boundaries |
 | `src/ui/`, `src/App.tsx`                 | Role-aware French workflows, navigation and persistence feedback             |
 | `scripts/build-sw.mjs`                   | Content-versioned service worker, limited to the project path                |
 | `tests/`                                 | Domain rules, production browser journeys and accessibility checks           |
@@ -106,7 +110,7 @@ Single timed calendar events use UTC instants; weekly events include `Europe/Par
 
 ```sh
 npm run check
-npx playwright install chromium
+npx playwright install chromium firefox webkit
 npm run test:e2e
 ```
 

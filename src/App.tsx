@@ -18,7 +18,8 @@ import {
   ShieldCheck,
   WifiOff,
 } from 'lucide-react';
-import { repository } from './data/repository';
+import { repository, type FileWrite } from './data/repository';
+import { StorageError } from './data/stateValidation';
 import { type State, type Entry } from './domain/types';
 import { RuleError } from './domain/engine';
 import { authorisedNotices, canAdministrate } from './domain/policy';
@@ -72,7 +73,13 @@ export default function App() {
         ref.current = v;
         setS(v);
       })
-      .catch(() => setFatal('Impossible de lire les données locales.'));
+      .catch((error: unknown) =>
+        setFatal(
+          error instanceof StorageError && error.code === 'storageVersion'
+            ? 'Cette version de la démo ne peut pas lire ces données. Vos données sont conservées.'
+            : 'Impossible de lire les données locales. Vos données sont conservées.',
+        ),
+      );
     const hash = () => {
       setRoute(location.hash.slice(2) || 'home');
       setMenu(false);
@@ -121,7 +128,7 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [toast]);
-  const run = async (fn: (s: State) => State, message?: string) => {
+  const run = async (fn: (s: State) => State, message?: string, files?: FileWrite[]) => {
     let error: unknown;
     pending.current++;
     setSaving(true);
@@ -129,21 +136,23 @@ export default function App() {
       try {
         if (!ref.current) return;
         const next = fn(ref.current);
-        await repository.save(next);
+        await repository.save(next, ref.current.revision, files);
         ref.current = next;
         setS(next);
         setToast(message ?? t('Enregistré dans ce navigateur.', 'Saved in this browser.'));
       } catch (e) {
         error = e;
         setToast(
-          e instanceof RuleError
-            ? errors[e.code]
-              ? t(...errors[e.code])
-              : e.code
-            : t(
-                'Enregistrement impossible. Votre saisie est conservée. Vérifiez le stockage disponible.',
-                'Unable to save. Your input is preserved. Check available storage.',
-              ),
+          e instanceof StorageError && e.code === 'storageConflict'
+            ? 'Une autre fenêtre a modifié la démo. Copiez votre saisie puis rechargez cette page avant de réessayer.'
+            : e instanceof RuleError
+              ? errors[e.code]
+                ? t(...errors[e.code])
+                : e.code
+              : t(
+                  'Enregistrement impossible. Votre saisie est conservée. Vérifiez le stockage disponible.',
+                  'Unable to save. Your input is preserved. Check available storage.',
+                ),
         );
       }
     });
@@ -160,10 +169,21 @@ export default function App() {
     return (
       <main className="loading">
         <h1>{fatal}</h1>
+        <button onClick={() => location.reload()}>Réessayer</button>
         <button
           onClick={async () => {
-            await repository.reset();
-            location.reload();
+            if (
+              !window.confirm('Effacer les données de cette démo et revenir aux exemples fictifs ?')
+            )
+              return;
+            try {
+              await repository.reset();
+              location.reload();
+            } catch {
+              setFatal(
+                'Réinitialisation impossible. Vérifiez l’espace de stockage puis réessayez.',
+              );
+            }
           }}
         >
           Réinitialiser cette démo

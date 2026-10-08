@@ -1,3 +1,4 @@
+import { formAtVersion } from '../domain/formHistory';
 import { parisInput, parisInstant } from '../domain/schoolTime';
 import { useState } from 'react';
 import { Download, History, Copy, Check, Send } from 'lucide-react';
@@ -387,16 +388,22 @@ function FormAnswers({ e, childId }: { e: Entry; childId: string }) {
         )}
         {history && x && (
           <div className="stack">
-            {[...x.history, { answers: x.answers, at: x.at, version: x.formVersion }].map(
-              (h, i) => (
-                <div key={i} className="mini-card">
-                  <strong>
-                    v{h.version} · {formatDate(h.at, locale, true)}
-                  </strong>
-                  <AnswerView e={e} answers={h.answers} />
-                </div>
-              ),
-            )}
+            {[
+              ...x.history,
+              {
+                answers: x.answers,
+                at: x.at,
+                version: x.formVersion,
+                formSnapshot: x.formSnapshot,
+              },
+            ].map((h, i) => (
+              <div key={i} className="mini-card">
+                <strong>
+                  v{h.version} · {formatDate(h.at, locale, true)}
+                </strong>
+                <AnswerView e={formAtVersion(e, h.version, h.formSnapshot)} answers={h.answers} />
+              </div>
+            ))}
           </div>
         )}
         {editing && own && !locked && (
@@ -583,15 +590,19 @@ function FormAnswers({ e, childId }: { e: Entry; childId: string }) {
     </>
   );
 }
-export function AnswerView({ e, answers }: { e: Entry; answers: Answers }) {
+function AnswerView({ e, answers }: { e: Pick<Entry, 'fields'>; answers: Answers }) {
   const { locale, t } = useApp();
   return (
     <dl>
       {Object.entries(answers).map(([id, value]) => {
-        const f =
-          e.fields.find((f) => f.id === id) ??
-          e.history.flatMap((h) => h.fields ?? []).find((f) => f.id === id);
-        if (!f) return null;
+        const f = e.fields.find((f) => f.id === id);
+        if (!f)
+          return (
+            <div key={id} className="padded">
+              <dt className="muted">Libellé d’origine indisponible</dt>
+              <dd>{Array.isArray(value) ? value.join(', ') : value}</dd>
+            </div>
+          );
         return (
           <div key={id} className="padded">
             <dt className="muted">{f.label[locale] || f.label.fr}</dt>
@@ -627,7 +638,7 @@ function SubmissionCard({ e, x, staff = false }: { e: Entry; x: Submission; staf
         {s.adults.find((p) => p.id === x.author)?.name} · {formatDate(x.at, locale, true)} · v
         {x.formVersion}
       </p>
-      <AnswerView e={e} answers={x.answers} />
+      <AnswerView e={formAtVersion(e, x.formVersion, x.formSnapshot)} answers={x.answers} />
       {x.note && <p className="notice-inline">{x.note}</p>}
       <div className="row">
         <button onClick={() => download('recu-demarche-demo.pdf', submissionPdf(s, a, x, locale))}>
