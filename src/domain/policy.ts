@@ -1,4 +1,5 @@
 import type {
+  ProfileTarget,
   State,
   Adult,
   Child,
@@ -10,31 +11,57 @@ import type {
   Kind,
 } from './types';
 export const active = (s: State, a: Adult) => a.status === 'active' && a.year === s.year;
+export const currentChild = (s: State, c: Child) => !c.archived && c.year === s.year;
+export const currentClass = (s: State, id: string) =>
+  s.classes.some((c) => c.id === id && c.year === s.year && !c.archived);
+export const canAdministrate = (s: State, a: Adult) =>
+  active(s, a) && (a.roles.includes('director') || a.roles.includes('teacher'));
+export const canManageClass = (s: State, a: Adult, id: string) =>
+  currentClass(s, id) &&
+  active(s, a) &&
+  (a.roles.includes('director') || (a.roles.includes('teacher') && a.classes.includes(id)));
+export const managedClasses = (s: State, a: Adult) =>
+  s.classes.filter((c) => canManageClass(s, a, c.id));
+export const mandateEndFor = (a: Adult, id: string) => a.mandateEnds?.[id] ?? a.mandateEnd;
 export const guardian = (s: State, a: Adult, c: Child) =>
   active(s, a) &&
+  currentChild(s, c) &&
   a.roles.includes('guardian') &&
   a.children.includes(c.id) &&
   c.guardians.includes(a.id);
 export const teaches = (s: State, a: Adult, c: Child) =>
-  active(s, a) && c.year === s.year && a.roles.includes('teacher') && a.classes.includes(c.classId);
+  active(s, a) &&
+  currentChild(s, c) &&
+  currentClass(s, c.classId) &&
+  a.roles.includes('teacher') &&
+  a.classes.includes(c.classId);
 export const director = (s: State, a: Adult) => active(s, a) && a.roles.includes('director');
 export const serves = (s: State, a: Adult, c: Child) =>
   active(s, a) &&
-  c.year === s.year &&
+  currentChild(s, c) &&
   a.roles.includes('service') &&
   a.services.some((v) => c.services.includes(v));
 export const childrenFor = (s: State, a: Adult) =>
   s.children.filter(
-    (c) => guardian(s, a, c) || teaches(s, a, c) || director(s, a) || serves(s, a, c),
+    (c) =>
+      currentChild(s, c) &&
+      (guardian(s, a, c) || teaches(s, a, c) || director(s, a) || serves(s, a, c)),
   );
 export const guardianChildren = (s: State, a: Adult) => s.children.filter((c) => guardian(s, a, c));
 export const represents = (s: State, a: Adult, id: string) =>
   active(s, a) &&
   a.roles.includes('representative') &&
+  currentClass(s, id) &&
+  guardianChildren(s, a).some((c) => c.classId === id) &&
   a.representativeClasses.includes(id) &&
-  a.mandateEnd >= s.clock.slice(0, 10);
+  mandateEndFor(a, id) >= s.clock.slice(0, 10);
 export const classesFor = (s: State, a: Adult) => [
-  ...new Set([...a.classes, ...guardianChildren(s, a).map((c) => c.classId)]),
+  ...new Set([
+    ...(a.roles.includes('teacher') ? a.classes.filter((id) => currentClass(s, id)) : []),
+    ...guardianChildren(s, a)
+      .map((c) => c.classId)
+      .filter((id) => currentClass(s, id)),
+  ]),
 ];
 export function audienceAllows(s: State, a: Adult, scope: Audience): boolean {
   if (!active(s, a)) return false;
@@ -62,7 +89,7 @@ export function canAuthor(
   if (!active(s, a)) return false;
   if (kind === 'evaluation') {
     const c = s.children.find((c) => c.id === childId);
-    return !!c && (teaches(s, a, c) || director(s, a));
+    return !!c && currentChild(s, c) && (teaches(s, a, c) || director(s, a));
   }
   if (kind === 'topic')
     return (
@@ -100,7 +127,7 @@ export function canAuthor(
 export function audienceChildren(s: State, scope: Audience): Child[] {
   return s.children.filter(
     (c) =>
-      c.year === s.year &&
+      currentChild(s, c) &&
       (scope.type === 'school' ||
         (scope.type === 'class' && scope.ids.includes(c.classId)) ||
         (scope.type === 'service' && c.services.some((v) => scope.ids.includes(v))) ||
@@ -210,13 +237,43 @@ export function photoAllowed(s: State, ids: string[], use: PhotoUse): boolean {
     ids.length > 0 &&
     ids.every((id) => {
       const c = s.children.find((c) => c.id === id);
-      if (!c || c.year !== s.year || !c.guardians.length) return false;
+      if (!c || !currentChild(s, c) || !c.guardians.length) return false;
       return c.guardians.every((g) => c.consents[use][g] === 'allowed');
     })
   );
 }
+export const staffPhotoEligible = (p: Adult) =>
+  !p.roles.includes('guardian') &&
+  p.roles.some((r) => ['director', 'teacher', 'service'].includes(r));
+export function profileRecord(s: State, target: ProfileTarget) {
+  return target.kind === 'child'
+    ? s.children.find((c) => c.id === target.id)
+    : s.adults.find((p) => p.id === target.id);
+}
+export function canManageProfilePhoto(s: State, a: Adult, target: ProfileTarget): boolean {
+  if (!active(s, a)) return false;
+  if (target.kind === 'child') {
+    const c = s.children.find((c) => c.id === target.id);
+    return !!c && currentChild(s, c) && (director(s, a) || teaches(s, a, c));
+  }
+  const p = s.adults.find((p) => p.id === target.id);
+  return !!p && p.year === s.year && staffPhotoEligible(p) && (director(s, a) || p.id === a.id);
+}
+export function canReadProfilePhoto(s: State, a: Adult, target: ProfileTarget): boolean {
+  if (!active(s, a)) return false;
+  if (target.kind === 'child') return childrenFor(s, a).some((c) => c.id === target.id);
+  const p = s.adults.find((p) => p.id === target.id);
+  return (
+    !!p &&
+    staffPhotoEligible(p) &&
+    (canManageProfilePhoto(s, a, target) ||
+      (active(s, p) && audienceAllows(s, a, { type: 'school', ids: [] })))
+  );
+}
 export function canReadFile(s: State, a: Adult, f: Attachment): boolean {
   if (!active(s, a)) return false;
+  if (f.profile)
+    return profileRecord(s, f.profile)?.photoId === f.id && canReadProfilePhoto(s, a, f.profile);
   if (f.restricted)
     return (
       !!f.childId &&

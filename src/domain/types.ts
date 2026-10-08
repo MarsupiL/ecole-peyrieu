@@ -5,7 +5,9 @@ export type MembershipStatus = 'invited' | 'active' | 'suspended' | 'expired' | 
 export type Service = 'canteen' | 'care' | 'transport';
 export type PhotoUse = 'class' | 'school' | 'print' | 'website' | 'social';
 export type Choice = 'allowed' | 'refused' | 'awaiting' | 'withdrawn';
+export type ProfileTarget = { kind: 'child' | 'adult'; id: string };
 export interface Adult {
+  photoId?: string;
   id: string;
   name: string;
   roles: Role[];
@@ -15,6 +17,9 @@ export interface Adult {
   status: MembershipStatus;
   representativeClasses: string[];
   mandateEnd: string;
+  mandateEnds?: Record<string, string>;
+  removalReason?: string;
+  removedAt?: string;
   reviewers: string[];
   locale: Locale;
   contact: string;
@@ -29,6 +34,7 @@ export interface Adult {
   year: string;
 }
 export interface Child {
+  photoId?: string;
   id: string;
   name: string;
   dob: string;
@@ -48,6 +54,10 @@ export interface Child {
   evidence: string[];
   consents: Record<PhotoUse, Record<string, Choice>>;
   consentVersion: number;
+  archived?: boolean;
+  archivedAt?: string;
+  removalReason?: string;
+  unassignedAt?: string;
 }
 export interface ClassGroup {
   id: string;
@@ -175,6 +185,7 @@ export interface VoteReceipt {
   capability: string;
 }
 export interface Attachment {
+  profile?: ProfileTarget;
   id: string;
   name: string;
   type: string;
