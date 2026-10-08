@@ -10,6 +10,103 @@ const boot = async (page: Page) => {
   await expect(page.getByRole('heading', { name: 'Bonjour Alice,' })).toBeVisible();
 };
 
+test('sample details, messages and event locations have no inline English translations', async ({
+  page,
+}) => {
+  await boot(page);
+  await page.goto('./#/children/c1');
+  await expect(page.getByText('Choisir un fichier', { exact: true })).toBeVisible();
+  await expect(page.getByText('Aucun fichier sélectionné', { exact: true })).toBeVisible();
+  const upload = page.getByLabel('Ajouter un justificatif fictif', { exact: true });
+  await upload.focus();
+  const chooser = page.waitForEvent('filechooser');
+  await upload.press('Space');
+  expect((await chooser).isMultiple()).toBe(false);
+  for (const [route, text] of [
+    ['children/c1', 'Responsables légaux'],
+    ['conversation/teacher-chat', 'Le départ est prévu après l’accueil.'],
+    ['conversation/team-chat', 'Une question sur l’accueil du soir.'],
+    ['topic/topic', 'Un temps pour parler des livres'],
+    ['request/collection', 'Tante fictive'],
+    ['event/nature', 'Parc fictif'],
+    ['event/meeting', 'École · Démo'],
+  ]) {
+    await page.goto(`./#/${route}`);
+    await expect(page.locator('main')).toContainText(text);
+    await expect(page.locator('main')).not.toContainText(
+      /Legal guardians|We will leave|A question about|Time to talk|Fictional aunt|Fictional park|School · Demo/,
+    );
+  }
+  const response = await page.request.get('./sample-calendar.ics');
+  expect(await response.text()).toContain('SUMMARY:DÉMO - Journée du livre');
+  expect(await response.text()).not.toMatch(/Book day|fictional|browser edits/);
+});
+
+test('saved bilingual sample text is upgraded while custom content and uploaded bytes survive', async ({
+  page,
+}) => {
+  await boot(page);
+  await page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((resolve) => {
+      const request = indexedDB.open('peyrieu-school-demo-v1');
+      request.onsuccess = () => resolve(request.result);
+    });
+    const tx = db.transaction(['state', 'files'], 'readwrite');
+    const store = tx.objectStore('state');
+    const request = store.get('current');
+    request.onsuccess = () => {
+      const s = request.result as State;
+      s.children[0].collectors = 'Responsables légaux / Legal guardians';
+      s.children[1].collectors = 'Marie / Paul — contact familial';
+      s.drafts.alice = 'My own text / mon texte';
+      store.put(s, 'current');
+    };
+    // Even a locally replaced sample is preserved unless its bytes match the original.
+    tx.objectStore('files').put(
+      { bytes: new TextEncoder().encode('custom upload').buffer, type: 'image/png' },
+      'sample-photo',
+    );
+    await new Promise<void>((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  });
+  await page.goto('./#/children/c1');
+  await page.reload();
+  await expect(page.getByText('Responsables légaux', { exact: true })).toBeVisible();
+  await page.goto('./#/children/c2');
+  await expect(page.getByText('Marie / Paul — contact familial', { exact: true })).toBeVisible();
+  await page.reload();
+  const saved = await page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((resolve) => {
+      const request = indexedDB.open('peyrieu-school-demo-v1');
+      request.onsuccess = () => resolve(request.result);
+    });
+    const tx = db.transaction(['state', 'files'], 'readonly');
+    const read = (store: string, key: string) =>
+      new Promise<unknown>((resolve) => {
+        const request = tx.objectStore(store).get(key);
+        request.onsuccess = () => resolve(request.result);
+      });
+    const [state, file] = await Promise.all([
+      read('state', 'current'),
+      read('files', 'sample-photo'),
+    ]);
+    db.close();
+    return {
+      collectors: (state as State).children[0].collectors,
+      draft: (state as State).drafts.alice,
+      file: new TextDecoder().decode((file as { bytes: ArrayBuffer }).bytes),
+    };
+  });
+  expect(saved).toEqual({
+    collectors: 'Responsables légaux',
+    draft: 'My own text / mon texte',
+    file: 'custom upload',
+  });
+});
+
 test('previous English preferences open in French without clearing stored content', async ({
   page,
 }) => {
