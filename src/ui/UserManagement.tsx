@@ -929,8 +929,8 @@ export function AdminRightsPanel() {
               <tr>
                 <td data-label="Profil">Direction</td>
                 <td data-label="Droits">
-                  Inviter, modifier et révoquer les adultes ; gérer les photos des élèves et du
-                  personnel ; gérer tous les élèves, classes, services, liens familiaux et mandats ;
+                  Inviter, modifier et révoquer les adultes ; gérer les photos des élèves et des
+                  adultes ; gérer tous les élèves, classes, services, liens familiaux et mandats ;
                   archiver ou réinscrire les élèves.
                 </td>
                 <td data-label="Limites">
@@ -960,8 +960,8 @@ export function AdminRightsPanel() {
               <tr>
                 <td data-label="Profil">Parent / parent délégué</td>
                 <td data-label="Droits">
-                  Dossiers de ses enfants vérifiés ; pour un délégué, activités de représentation
-                  dans les classes et dates de son mandat.
+                  Dossiers de ses enfants vérifiés et modification de sa propre photo ; pour un
+                  délégué, activités de représentation dans les classes et dates de son mandat.
                 </td>
                 <td data-label="Limites">
                   Pas de modification des liens familiaux ou des accès d’autres personnes.
