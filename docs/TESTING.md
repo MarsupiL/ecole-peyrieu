@@ -1,5 +1,13 @@
 # Implementation acceptance report
 
+## Dropdown menu spacing — 8 October 2026
+
+The profile chooser and all single-select menus now have inset option text, 44 px minimum rows, rounded corners, a subtle shadow, a soft selected state and a checkmark. Long lists scroll within a viewport-limited panel. Closed profile controls have a padded, lightly bordered surface; inactive account statuses use the existing French translations. Table controls retain enough width for their selected labels. Existing native labels, focus, selection events and stored values remain intact.
+
+The enhancement uses CSS `appearance: base-select` behind feature detection. Chromium and the tested WebKit engine render the styled native picker; Firefox retains its native picker. Option padding is also offered to fallback browsers, but OS-controlled popup appearance varies. No JavaScript replacement widget or dependency was added. See [MDN's customizable-select documentation](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/Customizable_select).
+
+Lint, TypeScript/build, **54 domain tests** and **50 Chromium journeys** pass. The 12 focus/layout journeys also pass in both Firefox and WebKit (24 additional checks, including the corrected native-picker test rerun). Responsive coverage spans 320, 390, 768, 1024 and 1440 px and 200% text. Browser checks confirmed open-option bounds and padding, scrolling to the last profile, actual pointer selection, keyboard opening/arrow navigation/selection, focus indicators and saved preferences in Chromium/WebKit. Desktop/mobile profile, settings and consent-table screenshots were visually reviewed. Supporting-browser pointer tests now click the actual rendered option; fallback tests retain the native selection API. Physical mobile and assistive-technology walkthroughs remain unverified.
+
 ## Parent profile photos — 8 October 2026
 
 Parents, representatives and adults with combined parent/staff roles can now upload, replace and remove their own portrait in Preferences. The direction can manage all adult portraits in Administration. Parent portraits are readable only by their owner and the direction, including direct-file checks. Parents still cannot edit child photos or other adults' photos. Adding a parent role no longer deletes an existing portrait. Earlier parent-photo exclusions documented below describe superseded behavior.
