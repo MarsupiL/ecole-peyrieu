@@ -13,6 +13,14 @@ const outline = (select: Locator) =>
     return { style: style.outlineStyle, width: style.outlineWidth, color: style.outlineColor };
   });
 
+const chooseOpenOption = async (select: Locator, value: string) => {
+  if (await select.evaluate((el) => getComputedStyle(el).appearance === 'base-select')) {
+    await select.locator(`option[value="${value}"]`).click();
+  } else {
+    await select.selectOption(value);
+  }
+};
+
 test('pointer-selected dropdowns keep native focus without a ring and keyboard navigation restores it', async ({
   page,
 }) => {
@@ -25,11 +33,11 @@ test('pointer-selected dropdowns keep native focus without a ring and keyboard n
     await page.goto(`./#/${route}`);
     const select = page.getByRole('combobox', { name: label, exact: true });
     await select.click();
-    await select.selectOption(value);
+    await chooseOpenOption(select, value);
     await expect(select).toHaveValue(value);
     await expect(select).toBeFocused();
     expect((await outline(select)).style, `${route} pointer selection`).toBe('none');
-    // selectOption updates the native value but does not close every platform's picker.
+    // The option API does not close every platform’s native picker.
     await page.keyboard.press('Escape');
     await page.keyboard.press('Tab');
     await page.keyboard.press('Shift+Tab');
@@ -43,7 +51,7 @@ test('pointer-selected dropdowns keep native focus without a ring and keyboard n
     expect((await outline(select)).style).toBe('solid');
     // Clicking a control already focused by the keyboard switches back to pointer styling.
     await select.click();
-    await select.selectOption(value);
+    await chooseOpenOption(select, value);
     expect((await outline(select)).style).toBe('none');
   }
 });
