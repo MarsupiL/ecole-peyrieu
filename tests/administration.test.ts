@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { seed } from '../src/data/seed';
+import { demoPortrait } from '../src/data/portraits';
 import type { State, ProfileTarget } from '../src/domain/types';
 import {
   createChild,
@@ -167,6 +168,50 @@ describe('school administration boundaries and record preservation', () => {
 });
 
 describe('private profile photos', () => {
+  it('adds fictional defaults to only the seeded pupils and eligible staff without changing state', () => {
+    const s = setup();
+    const before = structuredClone(s);
+    const director = adult(s, 'director');
+    expect(
+      s.children.filter((c) => demoPortrait(s, director, { kind: 'child', id: c.id })),
+    ).toHaveLength(12);
+    expect(
+      s.adults.filter((p) => demoPortrait(s, director, { kind: 'adult', id: p.id })),
+    ).toHaveLength(7);
+    expect(demoPortrait(s, director, { kind: 'adult', id: 'alice' })).toBeUndefined();
+    expect(demoPortrait(s, director, { kind: 'adult', id: 'c1' })).toBeUndefined();
+    expect(s).toEqual(before);
+    const n = createChild(s, 'emma', input);
+    expect(demoPortrait(n, director, { kind: 'child', id: n.children.at(-1)!.id })).toBeUndefined();
+  });
+  it('uses profile visibility for defaults and excludes combined parent/staff roles', () => {
+    const s = setup();
+    expect(demoPortrait(s, adult(s, 'alice'), target)).toMatch(/portraits\/c1\.webp$/);
+    expect(demoPortrait(s, adult(s, 'ines'), target)).toBeUndefined();
+    adult(s, 'alice').status = 'suspended';
+    expect(demoPortrait(s, adult(s, 'alice'), target)).toBeUndefined();
+    adult(s, 'emma').roles.push('guardian');
+    expect(demoPortrait(s, adult(s, 'director'), { kind: 'adult', id: 'emma' })).toBeUndefined();
+  });
+  it('preserves uploaded photos and remembers removal of both pupil and staff defaults', () => {
+    for (const t of [target, { kind: 'adult', id: 'emma' } as const]) {
+      const s = setup();
+      const n = setProfilePhoto(s, 'director', t, photo);
+      expect(demoPortrait(n, adult(n, 'director'), t)).toBeUndefined();
+      const removedUpload = setProfilePhoto(n, 'director', t, null);
+      expect(demoPortrait(removedUpload, adult(removedUpload, 'director'), t)).toBeUndefined();
+      const removedDefault = setProfilePhoto(s, 'director', t, null);
+      removedDefault.audit = [];
+      expect(demoPortrait(removedDefault, adult(removedDefault, 'director'), t)).toBeUndefined();
+      expect(demoPortrait(s, adult(s, 'director'), t)).toBeDefined();
+    }
+  });
+  it('respects photo removals saved by earlier releases', () => {
+    const s = setProfilePhoto(setup(), 'emma', target, null);
+    delete child(s, 'c1').demoPhotoHidden;
+    expect(demoPortrait(s, adult(s, 'director'), target)).toBeUndefined();
+    expect(demoPortrait(s, adult(s, 'director'), { kind: 'child', id: 'c2' })).toBeDefined();
+  });
   it('allows direction, assigned teachers and staff self-service but excludes parents', () => {
     const s = setup();
     expect(canManageProfilePhoto(s, adult(s, 'director'), target)).toBe(true);
