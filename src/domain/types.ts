@@ -70,7 +70,7 @@ export interface ClassGroup {
 export type Audience = { type: 'school' | 'class' | 'service' | 'individual'; ids: string[] };
 export type Kind =
   'post' | 'form' | 'evaluation' | 'poll' | 'event' | 'topic' | 'conversation' | 'request';
-export type Status =
+type Status =
   | 'draft'
   | 'scheduled'
   | 'published'
@@ -104,7 +104,7 @@ export interface Entry {
   updated: string;
   year: string;
   version: number;
-  history: { at: string; title: Text; body: Text; fields?: Field[] }[];
+  history: { at: string; title: Text; body: Text; fields?: Field[]; version?: number }[];
   attachments: string[];
   pinned?: boolean;
   expires?: string;
@@ -157,6 +157,10 @@ export interface Entry {
   requestDetails?: string;
 }
 export type Answers = Record<string, string | string[]>;
+export interface FormSnapshot {
+  title: Text;
+  fields: Field[];
+}
 export interface Submission {
   id: string;
   formId: string;
@@ -167,20 +171,21 @@ export interface Submission {
   answers: Answers;
   at: string;
   formVersion: number;
-  history: { answers: Answers; at: string; version: number }[];
+  formSnapshot?: FormSnapshot;
+  history: { answers: Answers; at: string; version: number; formSnapshot?: FormSnapshot }[];
   status: 'draft' | 'submitted' | 'needsCorrection' | 'reviewed' | 'completed';
   note?: string;
   snapshot: { child: string; contact: string; emergency: string };
   confirmation: boolean;
 }
-export interface Vote {
+interface Vote {
   id: string;
   pollId: string;
   answers: string[];
   comment: string;
 }
 // Eligibility receipts are intentionally separate from organiser-visible vote content.
-export interface VoteReceipt {
+interface VoteReceipt {
   pollId: string;
   unitId: string;
   owner: string;
@@ -209,7 +214,7 @@ export interface Booking {
   at: string;
   history: string[];
 }
-export interface Notice {
+interface Notice {
   id: string;
   actor: string;
   kind: Kind;
@@ -219,7 +224,7 @@ export interface Notice {
   read: boolean;
   queued: boolean;
 }
-export interface ReviewTask {
+interface ReviewTask {
   id: string;
   childId?: string;
   entryId?: string;
@@ -230,7 +235,7 @@ export interface ReviewTask {
   status: 'pending' | 'completed';
   note: string;
 }
-export interface Audit {
+interface Audit {
   id: string;
   actor: string;
   action: string;

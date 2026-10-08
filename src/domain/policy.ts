@@ -55,7 +55,7 @@ export const represents = (s: State, a: Adult, id: string) =>
   guardianChildren(s, a).some((c) => c.classId === id) &&
   a.representativeClasses.includes(id) &&
   mandateEndFor(a, id) >= s.clock.slice(0, 10);
-export const classesFor = (s: State, a: Adult) => [
+const classesFor = (s: State, a: Adult) => [
   ...new Set([
     ...(a.roles.includes('teacher') ? a.classes.filter((id) => currentClass(s, id)) : []),
     ...guardianChildren(s, a)
@@ -63,7 +63,7 @@ export const classesFor = (s: State, a: Adult) => [
       .filter((id) => currentClass(s, id)),
   ]),
 ];
-export function audienceAllows(s: State, a: Adult, scope: Audience): boolean {
+function audienceAllows(s: State, a: Adult, scope: Audience): boolean {
   if (!active(s, a)) return false;
   if (scope.type === 'individual') return scope.ids.includes(a.id);
   if (scope.type === 'school')
@@ -112,6 +112,11 @@ export function canAuthor(
         );
       })
     );
+  if (
+    scope.type === 'class' &&
+    (!scope.ids.length || !scope.ids.every((id) => currentClass(s, id)))
+  )
+    return false;
   if (director(s, a)) return scope.type !== 'service';
   if (a.roles.includes('teacher') && scope.type === 'class')
     return scope.ids.length > 0 && scope.ids.every((c) => a.classes.includes(c));
@@ -124,7 +129,7 @@ export function canAuthor(
     scope.ids.every((c) => represents(s, a, c))
   );
 }
-export function audienceChildren(s: State, scope: Audience): Child[] {
+function audienceChildren(s: State, scope: Audience): Child[] {
   return s.children.filter(
     (c) =>
       currentChild(s, c) &&
@@ -169,6 +174,7 @@ export function canRead(s: State, a: Adult, e: Entry): boolean {
   if (e.kind === 'topic')
     return (
       e.year === s.year &&
+      (!['draft', 'scheduled'].includes(e.status) || canManage(s, a, e)) &&
       e.audience.type === 'class' &&
       e.audience.ids.some(
         (id) => guardianChildren(s, a).some((c) => c.classId === id) || represents(s, a, id),
@@ -185,7 +191,7 @@ export function canRead(s: State, a: Adult, e: Entry): boolean {
   if (e.kind === 'evaluation')
     return (
       !!c &&
-      (e.status === 'draft'
+      (['draft', 'scheduled'].includes(e.status)
         ? (e.author === a.id && teaches(s, a, c)) ||
           (e.responsible.includes(a.id) && (teaches(s, a, c) || director(s, a)))
         : guardian(s, a, c) || teaches(s, a, c) || director(s, a))
@@ -242,7 +248,7 @@ export function photoAllowed(s: State, ids: string[], use: PhotoUse): boolean {
     })
   );
 }
-export const staffPhotoEligible = (p: Adult) =>
+const staffPhotoEligible = (p: Adult) =>
   !p.roles.includes('guardian') &&
   p.roles.some((r) => ['director', 'teacher', 'service'].includes(r));
 export function profileRecord(s: State, target: ProfileTarget) {
