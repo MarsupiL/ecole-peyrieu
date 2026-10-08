@@ -101,7 +101,7 @@ export function seed(at = new Date().toISOString()): State {
       services: ['canteen', 'care', 'transport'],
       year,
       emergency: 'Contact fictif · 00 00 00 00 00',
-      collectors: 'Responsables légaux / Legal guardians',
+      collectors: 'Responsables légaux',
       care:
         i === 0
           ? tr(
@@ -405,7 +405,7 @@ export function seed(at = new Date().toISOString()): State {
         {
           id: 'tm1',
           author: 'alice',
-          text: 'Un temps pour parler des livres / Time to talk about books',
+          text: 'Un temps pour parler des livres',
           at: now,
           files: [],
         },
@@ -436,7 +436,7 @@ export function seed(at = new Date().toISOString()): State {
         {
           id: 'm1',
           author: 'emma',
-          text: 'Le départ est prévu après l’accueil. / We will leave after morning registration.',
+          text: 'Le départ est prévu après l’accueil.',
           at: now,
           files: [],
         },
@@ -458,7 +458,7 @@ export function seed(at = new Date().toISOString()): State {
         {
           id: 'm2',
           author: 'alice',
-          text: 'Une question sur l’accueil du soir. / A question about after-school care.',
+          text: 'Une question sur l’accueil du soir.',
           at: now,
           files: [],
         },
@@ -496,7 +496,7 @@ export function seed(at = new Date().toISOString()): State {
       status: 'pending',
       teams: ['care'],
       start: day(1, 14),
-      requestDetails: 'Tante fictive / Fictional aunt',
+      requestDetails: 'Tante fictive',
     },
   );
   add(
@@ -512,7 +512,7 @@ export function seed(at = new Date().toISOString()): State {
       audience: { type: 'class', ids: ['ce'] },
       start: day(4),
       end: day(4, 10),
-      location: 'Parc fictif / Fictional park',
+      location: 'Parc fictif',
       link: 'outing',
       capacity: 2,
     },
@@ -523,7 +523,7 @@ export function seed(at = new Date().toISOString()): State {
     ['Rencontre des familles', 'Family gathering'],
     ['Un moment pour échanger avec l’équipe.', 'A chance to meet the team.'],
     'director',
-    { start: day(7, 15), end: day(7, 16), location: 'École · Démo / School · Demo' },
+    { start: day(7, 15), end: day(7, 16), location: 'École · Démo' },
   );
   add(
     'book-day',
@@ -631,7 +631,7 @@ export function seed(at = new Date().toISOString()): State {
   s.attachments.push(
     {
       id: 'sample-photo',
-      name: 'sample-image.png',
+      name: 'illustration-fictive.png',
       type: 'image/png',
       size: 10000,
       owner: 'emma',

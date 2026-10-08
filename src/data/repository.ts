@@ -2,6 +2,7 @@ import { openDB, type IDBPDatabase } from 'idb';
 import type { State } from '../domain/types';
 import { seed } from './seed';
 import { upgradeClassRoster } from './classes';
+import { upgradeDemoFrench, sampleFiles, fileHash } from './french';
 export interface Repository {
   load(): Promise<State>;
   save(s: State): Promise<void>;
@@ -26,7 +27,7 @@ export class LocalRepository implements Repository {
     const s = (await db.get('state', 'current')) as State | undefined;
     if (s && s.schema !== 1) throw new Error('storageVersion');
     if (s) {
-      const updated = upgradeClassRoster(s);
+      const updated = await this.upgradeSampleFiles(upgradeDemoFrench(upgradeClassRoster(s)));
       if (updated !== s) await this.save(updated);
       return updated;
     }
@@ -57,11 +58,7 @@ export class LocalRepository implements Repository {
     await db.delete('files', id);
   }
   private async seedFiles(s: State) {
-    for (const [id, path] of [
-      ['sample-photo', 'sample-image.png'],
-      ['sample-evidence', 'sample-evidence.pdf'],
-      ['sample-work', 'sample-worksheet.pdf'],
-    ]) {
+    for (const { id, path } of sampleFiles) {
       try {
         const response = await fetch(`${import.meta.env.BASE_URL}${path}`);
         if (!response.ok) continue;
@@ -73,6 +70,30 @@ export class LocalRepository implements Repository {
         /* The UI reports a missing sample if first-load networking fails. */
       }
     }
+  }
+  private async upgradeSampleFiles(s: State): Promise<State> {
+    let updated = s;
+    for (const { id, path, previousHash } of sampleFiles) {
+      if (!s.attachments.some((f) => f.id === id)) continue;
+      const previous = await this.blob(id);
+      if (!previous || (await fileHash(previous)) !== previousHash) continue;
+      try {
+        const response = await fetch(`${import.meta.env.BASE_URL}${path}`);
+        if (!response.ok) continue;
+        const blob = await response.blob();
+        if (blob.type !== previous.type || (await fileHash(blob)) === previousHash) continue;
+        // Only byte-identical shipped samples are replaced, never uploaded files.
+        await this.putBlob(id, blob);
+        if (updated === s) {
+          updated = structuredClone(s);
+          updated.revision++;
+        }
+        updated.attachments.find((f) => f.id === id)!.size = blob.size;
+      } catch {
+        // An offline visitor keeps the sample; retry the upgrade on a later load.
+      }
+    }
+    return updated;
   }
   async reset() {
     const db = await this.open();
