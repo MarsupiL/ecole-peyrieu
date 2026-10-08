@@ -1,5 +1,20 @@
 # Implementation acceptance report
 
+## Administration and profile photos — 8 October 2026
+
+Validation: lint, TypeScript/production build, **47 domain tests** and **47 Chromium browser tests** pass. The seven new administration/photo journeys also pass in Firefox and WebKit (**14 additional checks**). Photos survive fresh offline reloads in Chromium and Firefox. The local WebKit runner reports an internal error for offline reload; that branch checks online reload and offline in-app navigation instead. Physical Safari/iOS offline relaunch remains unverified. The Chromium photo journey also verifies reading the previous raw-Blob storage format.
+
+The current source adds scoped pupil management, class transfers, departures/restoration, adult account management, class-specific representative mandates and optional private pupil/staff portraits. Existing schema-1 records remain compatible; no reset is required.
+
+- Domain coverage in `tests/administration.test.ts`: blank creation/import, real date validation, reciprocal verified family links, teacher source-class restrictions, unchanged child records/history across transfer, unassignment versus departure, independent mandate dates, preserved parent access, account revocation, protected administrator access, parent photo exclusion, publication-consent independence and denial of replaced/removed photo files.
+- Browser coverage in `tests/e2e/administration.spec.ts`: teacher creation and transfer with destination-teacher access, direction reassignment/archive/restore, class-scoped mandates, valid/invalid upload, staff self-service, parent controls excluded, removal, persistence and offline photos.
+- Administration tables/editors checked at 320 and 1440 pixels with full Axe checks. Existing role/module layout coverage now includes teacher administration at 320, 390, 768, 1024 and 1440 pixels. Table and mobile-navigation contrast were corrected; the demonstration banner now has a named landmark.
+- New files are stored as typed bytes to avoid WebKit failures when storing canvas-generated Blobs. Existing stored Blobs are still readable with no database reset or version change.
+- Only the repository's fictional sample illustration was uploaded in test browser contexts. No real pupil/staff photographs or external image requests were used.
+- Photos are browser-local. These tests establish demonstration behavior, not backend authorization, real accounts, physical mobile-camera behavior or formal accessibility certification.
+
+The sections below retain the historical release evidence.
+
 Date: **6 October 2026**. Build: app v1.0.0, schema 1. Test environments: macOS and GitHub Actions Ubuntu, Node.js 24, Playwright Chromium, production Vite output served at `/ecole-peyrieu/`.
 
 ## Recorded results
