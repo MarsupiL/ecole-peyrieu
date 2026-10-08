@@ -147,6 +147,12 @@ Source regression coverage is in `tests/e2e/layout.spec.ts`. The original deploy
 - The new browser journey decodes all 19 portraits, verifies parent exclusion, offline display, and pupil/staff default removal after reload. Existing upload journeys now explicitly await a blob URL so a visible default cannot mask an incomplete upload.
 - All 48 Chromium journeys pass across the complete run and the corrected save-wait rerun. Eight administration/photo journeys also pass in Firefox and WebKit (16 additional checks), including Axe and reflow at 320 and 1440 pixels. Chromium and Firefox cover fresh offline reload; the WebKit runner covers offline in-app use because of its previously observed offline-reload limitation. Physical mobile installation remains unverified.
 
+## Five class groups — 8 October 2026
+
+- Fresh and existing demo datasets use PS/MS/GS, CP/CE1, CE1/CE2, CE2/CM1 and CM1/CM2. Existing class IDs remain stable. The added CE2/CM1 group starts empty, ready for the direction to assign pupils and staff.
+- A one-time stored-data upgrade renames only the original current-year labels, adds the missing group without duplicating a locally created CE2/CM1 class, and leaves custom/archived groups and all pupil, staff, photo, permission and draft records intact. Subsequent loads do not recreate a removed group.
+- Lint, TypeScript/build and all 53 domain checks pass. The 49 Chromium journeys pass across the suite and corrected filter-label expectation rerun, including mobile layouts. A dedicated IndexedDB upgrade journey also passes in Firefox and WebKit; it compares every non-class state field and verifies that a previously uploaded photo still loads after the upgrade.
+
 ## Remaining checks and limitations
 
 - The public static demo is deployed. The live site is not a school production service; server authentication, private storage and real integrations remain outside its scope.
