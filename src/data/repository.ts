@@ -6,6 +6,7 @@ export interface Repository {
   save(s: State): Promise<void>;
   putBlob(id: string, blob: Blob): Promise<void>;
   blob(id: string): Promise<Blob | undefined>;
+  deleteBlob(id: string): Promise<void>;
   reset(): Promise<State>;
 }
 const DB = 'peyrieu-school-demo-v1';
@@ -35,11 +36,20 @@ export class LocalRepository implements Repository {
   }
   async putBlob(id: string, blob: Blob) {
     const db = await this.open();
-    await db.put('files', blob, id);
+    // Byte storage also works in WebKit where persisting a canvas Blob can fail.
+    await db.put('files', { bytes: await blob.arrayBuffer(), type: blob.type }, id);
   }
   async blob(id: string) {
     const db = await this.open();
-    return db.get('files', id) as Promise<Blob | undefined>;
+    const stored = (await db.get('files', id)) as
+      Blob | { bytes: ArrayBuffer; type: string } | undefined;
+    if (!stored) return undefined;
+    // Preserve compatibility with files already saved by earlier schema-1 builds.
+    return stored instanceof Blob ? stored : new Blob([stored.bytes], { type: stored.type });
+  }
+  async deleteBlob(id: string) {
+    const db = await this.open();
+    await db.delete('files', id);
   }
   private async seedFiles(s: State) {
     for (const [id, path] of [
