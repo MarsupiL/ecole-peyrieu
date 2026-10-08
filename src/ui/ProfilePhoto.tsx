@@ -7,6 +7,7 @@ import { canReadFile, canManageProfilePhoto, profileRecord } from '../domain/pol
 import { setProfilePhoto, requireRule } from '../domain/engine';
 import { validateFile } from '../domain/exports';
 import { repository } from '../data/repository';
+import { demoPortrait } from '../data/portraits';
 
 export function ProfileAvatar({
   target,
@@ -22,6 +23,7 @@ export function ProfileAvatar({
       f.id === record?.photoId && f.profile?.kind === target.kind && f.profile.id === target.id,
   );
   const photoId = file && canReadFile(s, a, file) ? file.id : undefined;
+  const defaultPhoto = demoPortrait(s, a, target);
   const [image, setImage] = useState<{ id: string; url: string }>();
   useEffect(() => {
     let cancelled = false;
@@ -45,6 +47,8 @@ export function ProfileAvatar({
     <span className={`avatar profile-avatar ${className}`}>
       {photoId && image?.id === photoId ? (
         <img src={image.url} alt={`Photo de ${name}`} />
+      ) : defaultPhoto ? (
+        <img src={defaultPhoto} alt={`Photo de ${name}`} title="Portrait fictif généré par IA" />
       ) : (
         <span aria-hidden="true">
           {name
@@ -108,6 +112,7 @@ export function ProfilePhotoEditor({ target }: { target: ProfileTarget }) {
   const [busy, setBusy] = useState(false);
   if (!canManageProfilePhoto(s, a, target)) return null;
   const record = profileRecord(s, target)!;
+  const defaultPhoto = demoPortrait(s, a, target);
   const cleanup = (id?: string) => {
     if (id) void repository.deleteBlob(id).catch(() => {});
   };
@@ -161,12 +166,13 @@ export function ProfilePhotoEditor({ target }: { target: ProfileTarget }) {
             }}
           />
         </Field>
+        {defaultPhoto && <p className="small-print">Portrait fictif généré par IA pour la démo.</p>}
         {target.kind === 'child' && (
           <p className="small-print">
-            Cette photo privée de profil ne modifie pas les autorisations de publication.
+            La photo de profil ne modifie pas les autorisations de publication.
           </p>
         )}
-        {record.photoId && (
+        {(record.photoId || defaultPhoto) && (
           <button
             disabled={busy}
             onClick={async () => {
