@@ -864,7 +864,7 @@ export function advanceClock(s: State, actor: string, hours: number) {
             !photoAllowed(n, e.photoChildren, e.photoUse))
         ) {
           e.status = 'draft';
-          e.reviewNote = 'Photo : accord à revérifier / Photo: permission must be reviewed';
+          e.reviewNote = 'Photo : accord à revérifier';
           notify(n, e, `photo-schedule-blocked:${e.id}`, [e.author, ...e.responsible], 'system');
           return;
         }
