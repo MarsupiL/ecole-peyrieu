@@ -446,6 +446,7 @@ describe('recurring calendars and scheduled consent', () => {
     s = setConsent(s, 'alice', 'c1', 'class', 'withdrawn');
     s = advanceClock(s, 'alice', 2);
     expect(entry(s, 'welcome').status).toBe('draft');
+    expect(entry(s, 'welcome').reviewNote).toBe('Photo : accord à revérifier');
     expect(
       s.notices.some((n) => n.actor === e.author && n.key.includes('photo-schedule-blocked')),
     ).toBe(true);
