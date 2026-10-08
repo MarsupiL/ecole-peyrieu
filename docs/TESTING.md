@@ -1,5 +1,13 @@
 # Implementation acceptance report
 
+## Remaining English sample content — 8 October 2026
+
+Removed inline English translations from sample child collectors, messages, representative discussions, collection requests, event locations and automatic photo-review notes. File sizes use French units. Upload controls show French text even in an English-language browser, retaining the native input, labels, keyboard focus and file picker. The sample illustration, two sample PDFs and public calendar feed are also French-only.
+
+Existing stored content upgrades without a reset. Only exact original bilingual strings are replaced, including their prefilled copies; custom wording and slash-separated content remain intact. Original sample files are replaced only when their bytes match the known shipped version. Uploaded or locally replaced files remain untouched; a failed sample fetch is retried on a later load. Stored record IDs, history entries, preferences, class assignments and drafts are preserved.
+
+Lint, TypeScript/build, **56 domain tests** and all **52 Chromium journeys** pass. The four French-language journeys also pass in Firefox and WebKit (eight additional checks). Separate upgrade checks in all three engines verify original stored sample replacement, failed-fetch retry, custom uploads, saved drafts and repeat reloads. Desktop/mobile child details, the illustration and both rendered PDFs were visually reviewed. Internal legacy translation fields remain compatible but are not exposed in the French interface.
+
 ## Dropdown menu spacing — 8 October 2026
 
 The profile chooser and all single-select menus now have inset option text, 44 px minimum rows, rounded corners, a subtle shadow, a soft selected state and a checkmark. Long lists scroll within a viewport-limited panel. Closed profile controls have a padded, lightly bordered surface; inactive account statuses use the existing French translations. Table controls retain enough width for their selected labels. Existing native labels, focus, selection events and stored values remain intact.
