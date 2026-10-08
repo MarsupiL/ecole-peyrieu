@@ -538,7 +538,7 @@ export function EventDetail({ e }: { e: Entry }) {
     </Card>
   );
 }
-export function Subscription({ onClose }: { onClose: () => void }) {
+function Subscription({ onClose }: { onClose: () => void }) {
   const { s, a, t, run, toast } = useApp();
   const token = s.feedTokens[a.id];
   const sample = new URL(`${import.meta.env.BASE_URL}sample-calendar.ics`, location.origin).href;

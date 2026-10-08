@@ -1,11 +1,12 @@
 import { createContext, useContext } from 'react';
+import type { FileWrite } from '../data/repository';
 import type { State, Adult, Entry, Locale, Kind } from '../domain/types';
 export interface AppContext {
   s: State;
   a: Adult;
   locale: Locale;
   t: (fr: string, en: string) => string;
-  run: (fn: (s: State) => State, message?: string) => Promise<void>;
+  run: (fn: (s: State) => State, message?: string, files?: FileWrite[]) => Promise<void>;
   go: (route: string) => void;
   open: (e: Entry) => void;
   toast: (text: string) => void;
@@ -76,6 +77,18 @@ export const statusNames: Record<string, [string, string]> = {
   deadline: ['Délai dépassé', 'Past deadline'],
 };
 export const errors: Record<string, [string, string]> = {
+  storageConflict: [
+    'Une autre fenêtre a modifié la démo. Copiez votre saisie puis rechargez cette page avant de réessayer.',
+    'Another window changed the demo. Preserve your input, then reload.',
+  ],
+  staleEntry: [
+    'Ce contenu a été modifié depuis son ouverture. Copiez votre saisie puis rouvrez l’éditeur.',
+    'This content changed while the editor was open.',
+  ],
+  invalidPreferences: [
+    'Vérifiez les horaires et les préférences de notification.',
+    'Check notification preferences and hours.',
+  ],
   protectedAccount: [
     'Votre compte de direction est protégé contre le retrait de ses propres accès.',
     'Your director account cannot remove its own access.',

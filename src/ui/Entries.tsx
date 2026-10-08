@@ -337,7 +337,7 @@ function EvaluationDetail({ e }: { e: Entry }) {
           {e.history.map((h, i) => (
             <div className="mini-card" key={i}>
               <strong>
-                v{i + 1} · {formatDate(h.at, locale, true)}
+                v{h.version ?? i + 1} · {formatDate(h.at, locale, true)}
               </strong>
               <p>{h.body[locale] || h.body.fr}</p>
             </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useApp } from './context';
+import { useApp, errors } from './context';
 import { Field } from './components';
 import type { ProfileTarget } from '../domain/types';
 import { uid } from '../domain/types';
@@ -113,9 +113,6 @@ export function ProfilePhotoEditor({ target }: { target: ProfileTarget }) {
   if (!canManageProfilePhoto(s, a, target)) return null;
   const record = profileRecord(s, target)!;
   const defaultPhoto = demoPortrait(s, a, target);
-  const cleanup = (id?: string) => {
-    if (id) void repository.deleteBlob(id).catch(() => {});
-  };
   return (
     <section className="profile-photo-editor" aria-label={`Photo de profil de ${record.name}`}>
       <ProfileAvatar target={target} className="portrait" />
@@ -134,30 +131,30 @@ export function ProfilePhotoEditor({ target }: { target: ProfileTarget }) {
               if (!file || busy) return;
               setBusy(true);
               const id = uid();
-              let saved = false;
               try {
                 const blob = await portrait(file);
-                await repository.putBlob(id, blob);
-                await run((s) =>
-                  setProfilePhoto(s, a.id, target, {
-                    id,
-                    name: 'photo-profil.jpg',
-                    type: blob.type,
-                    size: blob.size,
-                  }),
+                await run(
+                  (s) =>
+                    setProfilePhoto(s, a.id, target, {
+                      id,
+                      name: 'photo-profil.jpg',
+                      type: blob.type,
+                      size: blob.size,
+                    }),
+                  undefined,
+                  [{ id, blob }],
                 );
-                saved = true;
-                cleanup(record.photoId);
                 toast('Photo de profil enregistrée.');
               } catch (error) {
-                if (!saved) cleanup(id);
                 const code = error instanceof Error ? error.message : '';
                 toast(
-                  code === 'profilePhotoSize'
-                    ? 'Choisissez une photo non vide de 5 Mo maximum.'
-                    : code === 'denied'
-                      ? 'Vous ne pouvez plus modifier ce profil.'
-                      : 'La photo n’a pas été enregistrée. Choisissez une image JPEG, PNG ou WebP valide et vérifiez l’espace de stockage.',
+                  code === 'storageConflict'
+                    ? errors.storageConflict[0]
+                    : code === 'profilePhotoSize'
+                      ? 'Choisissez une photo non vide de 5 Mo maximum.'
+                      : code === 'denied'
+                        ? 'Vous ne pouvez plus modifier ce profil.'
+                        : 'La photo n’a pas été enregistrée. Choisissez une image JPEG, PNG ou WebP valide et vérifiez l’espace de stockage.',
                 );
               } finally {
                 input.value = '';
@@ -179,7 +176,6 @@ export function ProfilePhotoEditor({ target }: { target: ProfileTarget }) {
               setBusy(true);
               try {
                 await run((s) => setProfilePhoto(s, a.id, target, null));
-                cleanup(record.photoId);
               } catch {
               } finally {
                 setBusy(false);
