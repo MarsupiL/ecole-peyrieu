@@ -21,7 +21,7 @@ import {
 import { repository } from './data/repository';
 import { type State, type Entry } from './domain/types';
 import { RuleError } from './domain/engine';
-import { authorisedNotices } from './domain/policy';
+import { authorisedNotices, canAdministrate } from './domain/policy';
 import { Context, errors, roles } from './ui/context';
 import { Home } from './ui/Home';
 import { Forms } from './ui/Forms';
@@ -35,6 +35,7 @@ import { Settings, Notifications, Help } from './ui/Settings';
 import type { Kind } from './domain/types';
 import { Card, Modal, FilePreview } from './ui/components';
 import { useSelectFocus } from './ui/useSelectFocus';
+import { ProfileAvatar } from './ui/ProfilePhoto';
 import './style.css';
 const nav = [
   ['home', 'Accueil', 'Home', HomeIcon],
@@ -196,7 +197,7 @@ export default function App() {
       >
         {t('Aller au contenu', 'Skip to content')}
       </a>
-      <div className="demo-bar">
+      <div className="demo-bar" role="region" aria-label="Mode démonstration">
         <span>
           <span className="demo-pill">DÉMO</span>
           {t(
@@ -220,7 +221,7 @@ export default function App() {
           <div className="sidebar-label">{t('MON ESPACE', 'MY WORKSPACE')}</div>
           <nav aria-label={t('Navigation principale', 'Main navigation')}>
             {nav
-              .filter(([id]) => id !== 'administration' || a.roles.includes('director'))
+              .filter(([id]) => id !== 'administration' || canAdministrate(s, a))
               .map(([id, fr, en, Icon]) => (
                 <a key={id} href={`#/${id}`} className={route.split('/')[0] === id ? 'active' : ''}>
                   <Icon size={20} />
@@ -289,12 +290,7 @@ export default function App() {
               )}
               <label className="persona-picker">
                 <span className="sr-only">{t('Profil de démonstration', 'Demo persona')}</span>
-                <span className="avatar mini">
-                  {a.name
-                    .split(' ')
-                    .map((x) => x[0])
-                    .join('')}
-                </span>
+                <ProfileAvatar target={{ kind: 'adult', id: a.id }} className="mini" />
                 <select
                   aria-label={t('Profil de démonstration', 'Demo persona')}
                   value={a.id}

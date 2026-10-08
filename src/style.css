@@ -1335,7 +1335,7 @@ th {
 }
 th {
   font-size: 0.75rem;
-  color: #728794;
+  color: var(--muted);
   background: #f7f9fb;
   font-weight: 600;
 }
@@ -1967,7 +1967,7 @@ pre {
     justify-content: center;
     flex-direction: column;
     gap: 2px;
-    color: #718796;
+    color: var(--muted);
     font-size: 0.58rem;
     font-weight: 500;
     border: 0;
@@ -2265,5 +2265,154 @@ small {
     border: 1px solid #d4e3e9;
     border-radius: 8px;
     z-index: 30;
+  }
+}
+
+/* Administration and profile portraits share the app's compact, wrapping controls. */
+.admin-filters {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.5fr) repeat(2, minmax(150px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.admin-actions button {
+  padding: 8px 12px;
+  font-size: 0.86rem;
+}
+.admin-subline {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.admin-table td {
+  vertical-align: top;
+}
+.admin-table select {
+  min-width: 110px;
+}
+.admin-checks {
+  margin: 0 0 20px;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  min-width: 0;
+}
+.admin-checks legend {
+  padding: 0 6px;
+  font-weight: 700;
+}
+.admin-class-tools summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.section-title {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.profile-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.profile-avatar {
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.avatar.portrait {
+  width: 88px;
+  height: 88px;
+  font-size: 1.75rem;
+}
+.profile-photo-editor {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 0 0 24px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+.profile-photo-fields {
+  min-width: 0;
+  flex: 1;
+}
+.profile-photo-fields input[type='file'] {
+  max-width: 100%;
+  font-size: 0.85rem;
+  padding: 10px;
+}
+.profile-photo-fields .field {
+  margin-bottom: 10px;
+}
+.child-photo-row {
+  margin-bottom: 24px;
+}
+.child-photo-row:has(.profile-photo-editor) > .profile-avatar {
+  display: none;
+}
+.child-photo-row .profile-photo-editor {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border: 0;
+}
+@media (max-width: 900px) {
+  .admin-filters {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+@media (max-width: 700px) {
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tr,
+  .admin-table td {
+    display: block;
+    width: 100%;
+  }
+  .admin-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .admin-table tr {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .admin-table td {
+    border: 0;
+    padding: 8px 0;
+  }
+  .admin-table td::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+  .admin-table .admin-actions button {
+    min-height: 44px;
+  }
+  .profile-photo-editor {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .profile-photo-fields {
+    width: 100%;
   }
 }
